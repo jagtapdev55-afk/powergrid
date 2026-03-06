@@ -6,11 +6,12 @@ from unfold.admin import ModelAdmin
 from django.utils.html import format_html
 from django.contrib import messages
 from django.db import models as db_models
-from django.forms import DateTimeInput
-from .models import (
+from django.forms import DateTimeInput, TextInput
+from myapp.models import (
     Category, Article, CommonForm,
     ConnectionRequest, BillPayment, Complaint,
-    PowerOutage, MeterReading, FAQ, SupportTicket, TicketReply
+    PowerOutage, MeterReading, FAQ, SupportTicket, TicketReply,
+    OutageAnnouncement
 )
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import Group
@@ -211,19 +212,17 @@ class ConnectionRequestAdmin(ModelAdmin):
         return HttpResponseRedirect(reverse('admin:myapp_connectionrequest_changelist'))
 
     def quick_actions(self, obj):
-        approve_url = reverse('admin:connectionrequest_approve', args=[obj.pk])
-        reject_url  = reverse('admin:connectionrequest_reject',  args=[obj.pk])
+        approve_url = reverse('admin:myapp_connectionrequest_approve', args=[obj.pk])
+        reject_url  = reverse('admin:myapp_connectionrequest_reject',  args=[obj.pk])
         return format_html(
-            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;"'
-            ' onclick="return confirm(\'Approve this request?\')">✅ Approve</a>'
-            '<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;"'
-            ' onclick="return confirm(\'Reject this request?\')">❌ Reject</a>',
+            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;">✅ Approve</a>'
+            '&nbsp;'
+            '<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;">❌ Reject</a>',
             approve_url, reject_url
         )
     quick_actions.short_description = 'Quick Actions'
-    quick_actions.allow_tags = True
 
 
 # Do the same for all other models
@@ -323,6 +322,7 @@ if admin.site.is_registered(BillPayment):
 @admin.register(BillPayment)
 class BillPaymentAdmin(ModelAdmin):
     list_display = ['payment_id', 'consumer_number', 'billing_month', 'paid_amount', 'payment_status_badge', 'payment_date']
+    list_display_actions = ['complete', 'fail']
     list_filter = ['payment_status', 'payment_method', 'created_at']
     search_fields = ['payment_id', 'consumer_number', 'transaction_id']
     readonly_fields = ['payment_id', 'created_at', 'updated_at']
@@ -330,7 +330,6 @@ class BillPaymentAdmin(ModelAdmin):
         db_models.DateTimeField: {'widget': DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M')},
     }
     actions = [export_to_csv, mark_payment_completed, mark_payment_failed]
-    list_display = ['payment_id', 'consumer_number', 'billing_month', 'paid_amount', 'payment_status_badge', 'payment_date', 'quick_payment_actions']
     
     fieldsets = [
         ('Payment Information', {
@@ -366,8 +365,8 @@ class BillPaymentAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/complete/', self.admin_site.admin_view(self.complete_view), name='billpayment_complete'),
-            path('<int:pk>/fail/',     self.admin_site.admin_view(self.fail_view),     name='billpayment_fail'),
+            path('<int:pk>/complete/', self.admin_site.admin_view(self.complete_view), name='complete'),
+            path('<int:pk>/fail/',     self.admin_site.admin_view(self.fail_view),     name='fail'),
         ]
         return custom + urls
 
@@ -378,32 +377,14 @@ class BillPaymentAdmin(ModelAdmin):
         obj.payment_date = timezone.now()
         obj.save()
         messages.success(request, f'✅ Payment {obj.payment_id} marked completed.')
-        return HttpResponseRedirect(reverse('admin:myapp_billpayment_changelist'))
+        return HttpResponseRedirect(reverse('myapp_billpayment_changelist', current_app=self.admin_site.name))
 
     def fail_view(self, request, pk):
         obj = BillPayment.objects.get(pk=pk)
         obj.payment_status = 'failed'
         obj.save()
         messages.success(request, f'❌ Payment {obj.payment_id} marked failed.')
-        return HttpResponseRedirect(reverse('admin:myapp_billpayment_changelist'))
-
-    def quick_payment_actions(self, obj):
-        if obj.payment_status in ('completed', 'failed', 'refunded'):
-            return format_html('<span style="color:#999;font-size:0.78rem;">—</span>')
-        complete_url = reverse('admin:billpayment_complete', args=[obj.pk])
-        fail_url     = reverse('admin:billpayment_fail',     args=[obj.pk])
-        return format_html(
-            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;"'
-            ' onclick="return confirm(\'Mark payment as completed?\')">✅ Complete</a>'
-            '<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;"'
-            ' onclick="return confirm(\'Mark payment as failed?\')">❌ Fail</a>',
-            complete_url, fail_url
-        )
-    quick_payment_actions.short_description = 'Quick Actions'
-    quick_payment_actions.allow_tags = True
-
+        return HttpResponseRedirect(reverse('myapp_billpayment_changelist', current_app=self.admin_site.name))
 
 if admin.site.is_registered(Complaint):
     admin.site.unregister(Complaint)
@@ -498,19 +479,17 @@ class ComplaintAdmin(ModelAdmin):
         return HttpResponseRedirect(reverse('admin:myapp_complaint_changelist'))
 
     def quick_actions(self, obj):
-        resolve_url  = reverse('admin:complaint_resolve',  args=[obj.pk])
-        progress_url = reverse('admin:complaint_progress', args=[obj.pk])
+        resolve_url  = reverse('admin:myapp_complaint_resolve',  args=[obj.pk])
+        progress_url = reverse('admin:myapp_complaint_progress', args=[obj.pk])
         return format_html(
-            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;"'
-            ' onclick="return confirm(\'Mark as Resolved?\')">✅ Resolve</a>'
-            '<a href="{}" style="background:#2196F3;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;"'
-            ' onclick="return confirm(\'Mark as In Progress?\')">🔧 Progress</a>',
+            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;">✅ Resolve</a>'
+            '&nbsp;'
+            '<a href="{}" style="background:#2196F3;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;">🔧 Progress</a>',
             resolve_url, progress_url
         )
     quick_actions.short_description = 'Quick Actions'
-    quick_actions.allow_tags = True
 
 
 if admin.site.is_registered(PowerOutage):
@@ -612,19 +591,17 @@ class MeterReadingAdmin(ModelAdmin):
     def quick_meter_actions(self, obj):
         if obj.status in ('verified', 'billed'):
             return format_html('<span style="color:#999;font-size:0.78rem;">—</span>')
-        verify_url = reverse('admin:meterreading_verify', args=[obj.pk])
-        reject_url = reverse('admin:meterreading_reject', args=[obj.pk])
+        verify_url = reverse('admin:myapp_meterreading_verify', args=[obj.pk])
+        reject_url = reverse('admin:myapp_meterreading_reject', args=[obj.pk])
         return format_html(
-            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;"'
-            ' onclick="return confirm(\'Verify this reading?\')">✅ Verify</a>'
-            '<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;"'
-            ' onclick="return confirm(\'Reject this reading?\')">❌ Reject</a>',
+            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;">✅ Verify</a>'
+            '&nbsp;'
+            '<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;">❌ Reject</a>',
             verify_url, reject_url
         )
     quick_meter_actions.short_description = 'Quick Actions'
-    quick_meter_actions.allow_tags = True
 
     def get_urls(self):
         urls = super().get_urls()
@@ -764,19 +741,17 @@ class SupportTicketAdmin(ModelAdmin):
     def quick_ticket_actions(self, obj):
         if obj.status in ('resolved', 'closed'):
             return format_html('<span style="color:#999;font-size:0.78rem;">—</span>')
-        resolve_url = reverse('admin:supportticket_resolve', args=[obj.pk])
-        close_url   = reverse('admin:supportticket_close',   args=[obj.pk])
+        resolve_url = reverse('admin:myapp_supportticket_resolve', args=[obj.pk])
+        close_url   = reverse('admin:myapp_supportticket_close',   args=[obj.pk])
         return format_html(
-            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;"'
-            ' onclick="return confirm(\'Mark ticket as resolved?\')">✅ Resolve</a>'
-            '<a href="{}" style="background:#607D8B;color:#fff;padding:4px 10px;border-radius:6px;'
-            'font-size:0.75rem;font-weight:700;text-decoration:none;"'
-            ' onclick="return confirm(\'Close this ticket?\')">🔒 Close</a>',
+            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;">✅ Resolve</a>'
+            '&nbsp;'
+            '<a href="{}" style="background:#607D8B;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;">🔒 Close</a>',
             resolve_url, close_url
         )
     quick_ticket_actions.short_description = 'Quick Actions'
-    quick_ticket_actions.allow_tags = True
 
 
 # Group Admin
@@ -796,3 +771,35 @@ class TicketReplyAdmin(ModelAdmin):
     list_filter = ['is_staff_reply', 'created_at']
     search_fields = ['ticket__ticket_number', 'message']
     readonly_fields = ['created_at']
+
+
+# ── FEATURE 4: Outage Announcement Admin ──────────────────────────────────
+if admin.site.is_registered(OutageAnnouncement):
+    admin.site.unregister(OutageAnnouncement)
+
+@admin.register(OutageAnnouncement)
+class OutageAnnouncementAdmin(ModelAdmin):
+    list_display  = ['title', 'area', 'start_datetime', 'end_datetime', 'status', 'notify_users', 'notified_at']
+    list_filter   = ['status', 'notify_users', 'start_datetime']
+    search_fields = ['title', 'area', 'reason']
+    readonly_fields = ['notified_at', 'created_at', 'updated_at']
+
+    fieldsets = [
+        ('Announcement Details', {
+            'fields': ['title', 'area', 'reason', 'status']
+        }),
+        ('Schedule', {
+            'fields': ['start_datetime', 'end_datetime']
+        }),
+        ('Notification', {
+            'fields': ['notify_users', 'notified_at', 'created_by']
+        }),
+        ('Timestamps', {
+            'fields': ['created_at', 'updated_at']
+        }),
+    ]
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
