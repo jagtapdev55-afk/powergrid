@@ -1,0 +1,382 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% progressive_web_app_meta %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerGrid | Solutions</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-blue: #38bdf8;
+            --text-white: #ffffff;
+            --text-muted: #cbd5e1;
+            /* Ultra-transparent dark glass */
+            --glass-bg: rgba(15, 23, 42, 0.35); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 1. Smooth Scrolling Enable */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+
+        /* 2. Fixed Background Image */
+        .background-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -1;
+            /* Replace with your actual image path */
+            background-image: url('{% static "images/gettyimages-979872784-612x612.jpg" %}'); 
+            background-size: cover;
+            background-position: center;
+            /* A very light gradient overlay to ensure text is always readable */
+            box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.2); 
+        }
+
+        /* 3. Transparent Navbar */
+        .navbar {
+            position: fixed;
+            top: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.5rem 5%;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+            backdrop-filter: blur(4px);
+        }
+
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: white; 
+            font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .nav-item {
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+        }
+
+        .nav-item:hover { color: var(--primary-blue); }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-left: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background: var(--glass-bg);
+            color: white;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+        
+        .btn-login:hover { background: rgba(255,255,255,0.1); }
+
+        .btn-register {
+            background: var(--primary-blue);
+            color: #0f172a;
+            border: none;
+        }
+
+        .btn-register:hover {
+            background: #7dd3fc;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        /* 4. Hero Section */
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 8%;
+            position: relative;
+        }
+
+        .hero-section h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 500px;
+            margin-bottom: 2.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        /* Scroll Down Indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 40px;
+            left: 8%;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .scroll-down:hover { opacity: 1; color: var(--primary-blue); }
+        .scroll-down i { animation: bounce 2s infinite; }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* 5. Services Section (The "Glass" Fix) */
+        .services-section {
+            min-height: 100vh;
+            padding: 100px 8%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Dark Frosted Glass Cards */
+        .service-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            transition: transform 0.4s ease, border-color 0.4s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-blue);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .service-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* 6. Contact & Footer Section */
+        .contact-section {
+            background: rgba(0, 0, 0, 0.7); /* Darker anchor for the bottom */
+            backdrop-filter: blur(20px);
+            padding: 4rem 8% 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .contact-item i {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-top: 3px;
+        }
+
+        .contact-item h4 {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .contact-item p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 { font-size: 3rem; }
+            .nav-links { display: none; } /* Mobile menu needed for small screens */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-container"></div>
+
+    <nav class="navbar">
+        <a href="/" class="brand">
+            <i class="fa-solid fa-bolt" style="color: var(--primary-blue);"></i> PowerGrid
+        </a>
+        
+        <div class="nav-links">
+            <a href="#home" class="nav-item">Home</a>
+            <a href="#services" class="nav-item">Services</a>
+            <a href="#contact" class="nav-item">Contact</a>
+            
+            <div class="auth-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'user_dashboard' %}" class="btn btn-login">Dashboard</a>
+                    <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-register">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-login">Login</a>
+                    <a href="{% url 'accounts:register' %}" class="btn btn-register">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero-section">
+        <h1>PowerGrid<br>Solutions</h1>
+        <p>Smart Energy Management for a Sustainable Future. Monitor and map your grid with absolute precision.</p>
+        <div>
+            <a href="#services" class="btn btn-login" style="padding: 1rem 2rem;">Explore Services</a>
+        </div>
+        
+        <a href="#services" class="scroll-down">
+            Scroll to explore <i class="fa-solid fa-arrow-down"></i>
+        </a>
+    </section>
+
+    <section id="services" class="services-section">
+        <h2 class="section-title">Our Services</h2>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <i class="fa-solid fa-chart-simple service-icon"></i>
+                <h3>Live Analytics</h3>
+                <p>Track energy consumption, monitor load balancing, and process real-time streams across your entire infrastructure.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fa-solid fa-map-location-dot service-icon"></i>
+                <h3>Grid Mapping</h3>
+                <p>Interactive geospatial views of all active assets, substations, and distribution lines mapped to the terrain.</p>
+            </div>
+            
+            <div class="service-card">
+                <i class="fa-solid fa-shield-halved service-icon"></i>
+                <h3>Secure Sync</h3>
+                <p>Enterprise-grade, end-to-end encryption ensuring your critical infrastructure data remains private and compliant.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <div class="contact-grid">
+            <div class="contact-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <div>
+                    <h4>Headquarters</h4>
+                    <p>273 Nelbak Main Road,<br>Faraslora, WA, India</p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <i class="fa-solid fa-phone"></i>
+                <div>
+                    <h4>Direct Line</h4>
+                    <p>(939) 372-7772<br>Available 24/7 for support</p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <i class="fa-solid fa-envelope"></i>
+                <div>
+                    <h4>Email Support</h4>
+                    <p>powergrid.info@gmail.com<br>Response within 2 hours</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            &copy; 2024 PowerGrid Solutions. All rights reserved.
+        </div>
+    </section>
+
+</body>
+</html>

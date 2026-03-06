@@ -1,0 +1,1178 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% progressive_web_app_meta %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — PowerGrid</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <!-- Bebas Neue: DB-style bold condensed neon signage | Share Tech Mono: terminal IDs | Nunito Sans: readable body -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green:        #3a9e25;
+            --green-dark:   #256b17;
+            --green-mid:    #4db833;
+            --green-light:  #e8f7e4;
+            --green-xlight: #f4fbf2;
+            --black:        #111a0e;
+            --ink:          #1f2d1b;
+            --ink-mid:      #3d5236;
+            --ink-soft:     #7a9470;
+            --border:       #d4e8ce;
+            --border-mid:   #c0dab8;
+            --white:        #ffffff;
+            --off-white:    #fafcf9;
+            --amber:        #d97706;
+            --amber-bg:     #fef3c7;
+            --red:          #dc2626;
+            --red-bg:       #fee2e2;
+            --blue:         #2563eb;
+            --blue-bg:      #dbeafe;
+            --teal:         #0d9488;
+            --teal-bg:      #ccfbf1;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background: var(--white);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ═══════════════════════════════════════════
+           ANACONDA-STYLE SVG BACKGROUND LINES
+           Flowing diagonal bezier curves, organic
+        ═══════════════════════════════════════════ */
+        .bg-lines {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .bg-lines svg {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+
+        /* Slow gentle pan animation */
+        .bg-lines .line-group-1 {
+            animation: lineDrift1 22s ease-in-out infinite alternate;
+            transform-origin: center center;
+        }
+        .bg-lines .line-group-2 {
+            animation: lineDrift2 28s ease-in-out infinite alternate;
+            transform-origin: center center;
+        }
+        .bg-lines .line-group-3 {
+            animation: lineDrift3 18s ease-in-out infinite alternate;
+            transform-origin: center center;
+        }
+
+        @keyframes lineDrift1 {
+            0%   { transform: translate(0px, 0px) scale(1); }
+            100% { transform: translate(-18px, 12px) scale(1.02); }
+        }
+        @keyframes lineDrift2 {
+            0%   { transform: translate(0px, 0px) scale(1); }
+            100% { transform: translate(14px, -16px) scale(1.015); }
+        }
+        @keyframes lineDrift3 {
+            0%   { transform: translate(0px, 0px); }
+            100% { transform: translate(-8px, 20px); }
+        }
+
+        /* ═══════════════════════════════════════════
+           LOADER
+        ═══════════════════════════════════════════ */
+        .loader-screen {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--white);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loader-bolt {
+            font-size: 56px; color: var(--green);
+            animation: boltBounce 0.9s ease-in-out infinite alternate;
+            filter: drop-shadow(0 4px 16px rgba(58,158,37,0.25));
+        }
+        @keyframes boltBounce {
+            from { transform: scale(0.88) translateY(4px); }
+            to   { transform: scale(1.08) translateY(-4px); filter: drop-shadow(0 8px 24px rgba(58,158,37,0.4)); }
+        }
+        .loader-name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2.4rem; font-weight: 400;
+            color: var(--black); margin-top: 18px;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(58,158,37,0.5), 0 0 28px rgba(58,158,37,0.25);
+        }
+        .loader-name span {
+            color: var(--green);
+            text-shadow: 0 0 10px rgba(58,158,37,0.7), 0 0 24px rgba(58,158,37,0.35);
+        }
+        .loader-bar {
+            width: 120px; height: 3px; background: var(--border);
+            border-radius: 4px; margin-top: 20px; overflow: hidden;
+        }
+        .loader-bar-fill {
+            height: 100%; width: 0%;
+            background: var(--green); border-radius: 4px;
+            animation: barLoad 0.9s ease-out 0.2s forwards;
+        }
+        @keyframes barLoad { to { width: 100%; } }
+
+        /* ═══════════════════════════════════════════
+           LAYOUT
+        ═══════════════════════════════════════════ */
+        .page-wrapper {
+            position: relative;
+            max-width: 1240px; margin: 0 auto;
+            padding: 0 36px 100px;
+        }
+
+        /* ═══════════════════════════════════════════
+           NAV
+        ═══════════════════════════════════════════ */
+        .top-nav {
+            position: relative; z-index: 500;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 22px 0 22px;
+            border-bottom: 1.5px solid var(--border);
+            margin-bottom: 0;
+            opacity: 0; transform: translateY(-16px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 11px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.7rem; font-weight: 400;
+            color: var(--black);
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(58,158,37,0.4), 0 0 20px rgba(58,158,37,0.2);
+        }
+        .logo-bolt {
+            width: 36px; height: 36px; border-radius: 9px;
+            background: var(--green);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 10px rgba(58,158,37,0.3);
+        }
+        .logo-bolt i { color: #fff; font-size: 0.95rem; }
+        .logo span {
+            color: var(--green);
+            text-shadow: 0 0 8px rgba(58,158,37,0.7), 0 0 20px rgba(58,158,37,0.35);
+            animation: neonPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            from { text-shadow: 0 0 6px rgba(58,158,37,0.5), 0 0 16px rgba(58,158,37,0.25); }
+            to   { text-shadow: 0 0 12px rgba(58,158,37,0.85), 0 0 30px rgba(58,158,37,0.45), 0 0 50px rgba(58,158,37,0.15); }
+        }
+
+        @keyframes neonPulseNum {
+            from { text-shadow: 0 0 6px currentColor; opacity: 0.88; }
+            to   { text-shadow: 0 0 14px currentColor, 0 0 30px currentColor; opacity: 1; }
+        }
+
+        .nav-links {
+            display: flex; gap: 4px;
+        }
+        .nav-links a {
+            text-decoration: none; color: var(--ink-mid);
+            font-size: 0.88rem; font-weight: 700;
+            padding: 7px 15px; border-radius: 8px;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--green-light);
+            color: var(--green-dark);
+        }
+
+        .nav-right { display: flex; align-items: center; gap: 10px; position: relative; }
+
+        /* ── NOTIFICATION BELL ── */
+        .notif-btn {
+            position: relative; width: 36px; height: 36px; border-radius: 9px;
+            background: var(--off-white); border: 1.5px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--ink-mid); font-size: 0.9rem; cursor: pointer;
+            text-decoration: none; transition: all 0.2s ease;
+        }
+        .notif-btn:hover { background: var(--green-light); border-color: var(--border-mid); color: var(--green-dark); }
+        .notif-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--red); color: #fff;
+            font-size: 0.6rem; font-weight: 800;
+            min-width: 16px; height: 16px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 4px; border: 2px solid var(--white);
+        }
+
+        /* ── PROFILE DROPDOWN ── */
+        .profile-wrap { position: relative; }
+        .profile-trigger {
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer; padding: 5px 10px 5px 5px;
+            border-radius: 10px; border: 1.5px solid var(--border);
+            background: var(--off-white);
+            transition: all 0.2s ease; user-select: none;
+        }
+        .profile-trigger:hover { background: var(--green-light); border-color: var(--border-mid); }
+        .nav-avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--green);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-weight: 400; font-size: 1rem; color: #fff; letter-spacing: 1px;
+            flex-shrink: 0;
+        }
+        .nav-username { font-weight: 700; font-size: 0.85rem; color: var(--ink); }
+        .profile-caret { color: var(--ink-soft); font-size: 0.65rem; transition: transform 0.2s ease; }
+        .profile-wrap.open .profile-caret { transform: rotate(180deg); }
+
+        .profile-dropdown {
+            position: absolute; top: calc(100% + 8px); right: 0;
+            background: var(--white); border: 1.5px solid var(--border);
+            border-radius: 14px; min-width: 220px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+            z-index: 9998; overflow: hidden;
+            opacity: 0; visibility: hidden; transform: translateY(-8px);
+            transition: all 0.22s ease;
+        }
+        .profile-wrap.open .profile-dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        .dd-header {
+            padding: 14px 16px 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--green-xlight);
+        }
+        .dd-header .dd-name { font-weight: 800; font-size: 0.9rem; color: var(--black); }
+        .dd-header .dd-email { font-size: 0.75rem; color: var(--ink-soft); margin-top: 2px; }
+
+        .dd-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 16px; text-decoration: none;
+            color: var(--ink); font-size: 0.85rem; font-weight: 600;
+            transition: background 0.15s ease;
+        }
+        .dd-item:hover { background: var(--green-xlight); color: var(--green-dark); }
+        .dd-item i { width: 16px; text-align: center; color: var(--ink-soft); font-size: 0.82rem; }
+        .dd-item:hover i { color: var(--green); }
+        .dd-divider { height: 1px; background: var(--border); margin: 4px 0; }
+        .dd-item.danger { color: var(--red); }
+        .dd-item.danger i { color: var(--red); }
+        .dd-item.danger:hover { background: var(--red-bg); }
+
+        .logout-btn {
+            background: var(--black); color: #fff;
+            border: none; padding: 8px 18px; border-radius: 8px;
+            font-family: 'Nunito Sans', sans-serif;
+            font-weight: 700; font-size: 0.84rem;
+            cursor: pointer; transition: all 0.22s ease;
+            letter-spacing: 0.2px; width: 100%; text-align: left;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logout-btn:hover { background: var(--red); }
+
+        /* ═══════════════════════════════════════════
+           REVEAL ANIMATION
+        ═══════════════════════════════════════════ */
+        .reveal {
+            opacity: 0; transform: translateY(22px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ═══════════════════════════════════════════
+           WELCOME SECTION
+        ═══════════════════════════════════════════ */
+        .welcome-section {
+            padding: 52px 0 48px;
+            border-bottom: 1.5px solid var(--border);
+            margin-bottom: 48px;
+        }
+        .welcome-eyebrow {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: var(--green-light);
+            border: 1px solid var(--border-mid);
+            padding: 4px 13px; border-radius: 6px;
+            font-size: 0.73rem; font-weight: 800;
+            color: var(--green-dark);
+            text-transform: uppercase; letter-spacing: 1.8px;
+            margin-bottom: 20px;
+        }
+        .welcome-eyebrow i { font-size: 0.62rem; color: var(--green); animation: dot-blink 2s ease-in-out infinite; }
+        @keyframes dot-blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+        .welcome-section h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 5rem; font-weight: 400;
+            color: var(--black); line-height: 1.0;
+            letter-spacing: 3px;
+            text-shadow: 0 0 2px rgba(58,158,37,0.15);
+        }
+        .welcome-section h1 .hi-name {
+            color: var(--green);
+            position: relative;
+            text-shadow: 0 0 8px rgba(58,158,37,0.6), 0 0 20px rgba(58,158,37,0.35), 0 0 40px rgba(58,158,37,0.15);
+        }
+        .welcome-section p {
+            margin-top: 16px; font-size: 1.05rem;
+            color: var(--ink-soft); max-width: 500px; line-height: 1.65;
+            font-weight: 400;
+        }
+
+        /* ═══════════════════════════════════════════
+           6-STAT ROW
+        ═══════════════════════════════════════════ */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(6, 1fr);
+            gap: 16px; margin-bottom: 48px;
+        }
+        .stat-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 18px 20px;
+            position: relative; overflow: hidden;
+            transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: var(--sc-color, var(--green));
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.38s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.09);
+            border-color: var(--border-mid);
+        }
+        .stat-card:hover::before { transform: scaleX(1); }
+
+        /* color variants */
+        .sc-green  { --sc-color: var(--green); }
+        .sc-amber  { --sc-color: var(--amber); }
+        .sc-red    { --sc-color: var(--red); }
+        .sc-blue   { --sc-color: var(--blue); }
+        .sc-teal   { --sc-color: var(--teal); }
+
+        .stat-icon {
+            width: 34px; height: 34px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; margin-bottom: 14px;
+        }
+        .si-green { background: var(--green-light); color: var(--green-dark); }
+        .si-amber { background: var(--amber-bg);    color: var(--amber); }
+        .si-red   { background: var(--red-bg);      color: var(--red); }
+        .si-blue  { background: var(--blue-bg);     color: var(--blue); }
+        .si-teal  { background: var(--teal-bg);     color: var(--teal); }
+
+        .stat-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3rem; font-weight: 400; line-height: 1;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .sn-green { color: var(--green); }
+        .sn-amber { color: var(--amber); }
+        .sn-red   { color: var(--red); }
+        .sn-blue  { color: var(--blue); }
+        .sn-teal  { color: var(--teal); }
+
+        .stat-label {
+            font-size: 0.72rem; font-weight: 800;
+            color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.2px;
+        }
+
+        /* ═══════════════════════════════════════════
+           CONTENT SPLIT
+        ═══════════════════════════════════════════ */
+        .content-split {
+            display: grid; grid-template-columns: 260px 1fr;
+            gap: 26px; margin-bottom: 26px;
+        }
+
+        /* ═══════════════════════════════════════════
+           SIDEBAR
+        ═══════════════════════════════════════════ */
+        .sidebar { display: flex; flex-direction: column; gap: 9px; }
+        .sidebar-label {
+            font-size: 0.7rem; font-weight: 800;
+            color: var(--ink-soft); text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 7px; padding-left: 2px;
+        }
+        .action-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 15px; border-radius: 11px;
+            background: var(--off-white);
+            border: 1.5px solid var(--border);
+            text-decoration: none; color: var(--ink);
+            font-weight: 700; font-size: 0.88rem;
+            transition: all 0.22s ease;
+        }
+        .action-link:hover {
+            background: var(--green-light);
+            border-color: var(--border-mid);
+            transform: translateX(4px);
+            color: var(--green-dark);
+        }
+        .action-link:hover .al-icon { background: var(--green); color: #fff; }
+        .al-icon {
+            width: 30px; height: 30px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; flex-shrink: 0;
+            transition: all 0.22s ease;
+        }
+        .ali-green { background: var(--green-light); color: var(--green); }
+        .ali-amber { background: var(--amber-bg);    color: var(--amber); }
+        .ali-red   { background: var(--red-bg);      color: var(--red); }
+        .ali-blue  { background: var(--blue-bg);     color: var(--blue); }
+        .ali-teal  { background: var(--teal-bg);     color: var(--teal); }
+        .al-arrow {
+            margin-left: auto; color: var(--ink-soft); font-size: 0.7rem;
+            transition: transform 0.22s ease;
+        }
+        .action-link:hover .al-arrow { transform: translateX(3px); color: var(--green); }
+
+        /* ═══════════════════════════════════════════
+           SECTION CARDS
+        ═══════════════════════════════════════════ */
+        .sec-card {
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+        }
+        .sec-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 20px 24px 0;
+        }
+        .sec-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.3rem; font-weight: 400;
+            color: var(--black); letter-spacing: 2px;
+            display: flex; align-items: center; gap: 9px;
+            text-shadow: 0 0 6px rgba(58,158,37,0.18);
+        }
+        .sec-title i { color: var(--green); font-size: 0.9rem; }
+        .sec-pill {
+            background: var(--green-light);
+            color: var(--green-dark);
+            font-size: 0.68rem; font-weight: 800;
+            padding: 3px 10px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════════════════
+           TABLES
+        ═══════════════════════════════════════════ */
+        .tbl-wrap { overflow-x: auto; padding: 16px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { border-bottom: 1.5px solid var(--border); }
+        th {
+            padding: 9px 24px; text-align: left;
+            font-size: 0.68rem; font-weight: 800;
+            color: var(--ink-soft); text-transform: uppercase; letter-spacing: 1.5px;
+        }
+        td {
+            padding: 14px 24px;
+            font-size: 0.87rem; font-weight: 500;
+            border-bottom: 1px solid #f0f5ee;
+            color: var(--ink);
+        }
+        tbody tr { transition: background 0.18s ease; }
+        tbody tr:hover { background: var(--green-xlight); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .td-mono {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.78rem; color: var(--ink-soft);
+            font-weight: 400;
+        }
+        .td-strong { font-weight: 700; color: var(--black); }
+
+        .empty-row {
+            text-align: center; padding: 42px 24px;
+            color: var(--ink-soft); font-size: 0.87rem;
+        }
+        .empty-row i { font-size: 1.6rem; display: block; margin-bottom: 10px; opacity: 0.3; }
+
+        /* ═══════════════════════════════════════════
+           STATUS BADGES
+        ═══════════════════════════════════════════ */
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 6px;
+            font-size: 0.69rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+        .badge::before {
+            content: ''; width: 4px; height: 4px; border-radius: 50%;
+            background: currentColor; flex-shrink: 0;
+        }
+        .badge-pending         { background: var(--amber-bg);   color: var(--amber); }
+        .badge-under_review    { background: var(--blue-bg);    color: var(--blue); }
+        .badge-approved        { background: var(--green-light); color: var(--green-dark); }
+        .badge-completed       { background: #d1fae5;           color: #065f46; }
+        .badge-rejected        { background: var(--red-bg);     color: var(--red); }
+        .badge-registered      { background: var(--amber-bg);   color: var(--amber); }
+        .badge-in_progress     { background: var(--blue-bg);    color: var(--blue); }
+        .badge-resolved        { background: var(--green-light); color: var(--green-dark); }
+        .badge-closed          { background: #f1f5f9;           color: #64748b; }
+        .badge-reported        { background: var(--red-bg);     color: var(--red); }
+        .badge-repairing       { background: var(--amber-bg);   color: var(--amber); }
+        .badge-investigating   { background: var(--blue-bg);    color: var(--blue); }
+        .badge-acknowledged    { background: var(--teal-bg);    color: var(--teal); }
+        .badge-submitted       { background: var(--blue-bg);    color: var(--blue); }
+        .badge-verified        { background: var(--green-light); color: var(--green-dark); }
+        .badge-billed          { background: #d1fae5;           color: #065f46; }
+        .badge-open            { background: var(--red-bg);     color: var(--red); }
+        .badge-processing      { background: var(--blue-bg);    color: var(--blue); }
+        .badge-failed          { background: var(--red-bg);     color: var(--red); }
+        .badge-site_inspection { background: var(--teal-bg);    color: var(--teal); }
+        .badge-awaiting_response{ background: var(--amber-bg);  color: var(--amber); }
+        .badge-reopened        { background: var(--red-bg);     color: var(--red); }
+
+        .view-btn {
+            color: var(--ink-soft); font-size: 0.78rem; font-weight: 700;
+            text-decoration: none; padding: 4px 11px; border-radius: 7px;
+            border: 1.5px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        .view-btn:hover { background: var(--green-light); color: var(--green-dark); border-color: var(--border-mid); }
+
+        /* ═══════════════════════════════════════════
+           TWO-COL GRID (bottom sections)
+        ═══════════════════════════════════════════ */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-bottom: 26px; }
+
+        /* ═══════════════════════════════════════════
+           UNITS BAR
+        ═══════════════════════════════════════════ */
+        .ubar-bg { height: 4px; background: var(--border); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .ubar-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(90deg, var(--teal), #5eead4);
+            width: 0%; transition: width 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ═══════════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════════ */
+        .page-footer {
+            border-top: 1.5px solid var(--border);
+            padding: 28px 0 0;
+            display: flex; align-items: center; justify-content: space-between;
+            color: var(--ink-soft); font-size: 0.8rem;
+        }
+        .footer-brand {
+            font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+            color: var(--ink-mid); font-size: 1.15rem;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(58,158,37,0.3);
+        }
+        .footer-brand span {
+            color: var(--green);
+            text-shadow: 0 0 8px rgba(58,158,37,0.6), 0 0 20px rgba(58,158,37,0.3);
+        }
+
+        /* ═══════════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════════ */
+        @media (max-width: 1100px) {
+            .stats-grid    { grid-template-columns: repeat(3,1fr); }
+            .content-split { grid-template-columns: 1fr; }
+            .two-col       { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 680px) {
+            .page-wrapper  { padding: 0 16px 60px; }
+            .stats-grid    { grid-template-columns: repeat(2,1fr); }
+            .welcome-section h1 { font-size: 2.2rem; }
+            .nav-links     { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     ANACONDA-STYLE SVG BACKGROUND LINES
+     Flowing organic bezier curves
+═══════════════════════════════════════ -->
+<div class="bg-lines">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Group 1: Main flowing lines top-left to bottom-right -->
+        <g class="line-group-1">
+            <path d="M-120 180 C 200 -60, 600 400, 900 200 S 1300 -80, 1600 280"
+                  fill="none" stroke="#3a9e25" stroke-width="1.4" stroke-opacity="0.13"/>
+            <path d="M-120 230 C 200 -10, 600 450, 900 250 S 1300 -30, 1600 330"
+                  fill="none" stroke="#3a9e25" stroke-width="0.9" stroke-opacity="0.09"/>
+            <path d="M-120 280 C 200 40, 600 500, 900 300 S 1300 20, 1600 380"
+                  fill="none" stroke="#256b17" stroke-width="0.6" stroke-opacity="0.07"/>
+
+            <path d="M-120 620 C 180 860, 520 340, 880 580 S 1320 840, 1600 500"
+                  fill="none" stroke="#3a9e25" stroke-width="1.4" stroke-opacity="0.11"/>
+            <path d="M-120 670 C 180 910, 520 390, 880 630 S 1320 890, 1600 550"
+                  fill="none" stroke="#3a9e25" stroke-width="0.8" stroke-opacity="0.08"/>
+        </g>
+
+        <!-- Group 2: Secondary accent lines, slightly offset -->
+        <g class="line-group-2">
+            <path d="M 0 480 C 260 200, 680 750, 1040 420 S 1380 120, 1500 460"
+                  fill="none" stroke="#4db833" stroke-width="1.2" stroke-opacity="0.10"/>
+            <path d="M 0 540 C 260 260, 680 810, 1040 480 S 1380 180, 1500 520"
+                  fill="none" stroke="#4db833" stroke-width="0.7" stroke-opacity="0.07"/>
+
+            <path d="M 100 -40 C 380 300, 820 -80, 1100 320 S 1440 680, 1560 300"
+                  fill="none" stroke="#256b17" stroke-width="1.1" stroke-opacity="0.09"/>
+            <path d="M 100 10 C 380 350, 820 -30, 1100 370 S 1440 730, 1560 350"
+                  fill="none" stroke="#256b17" stroke-width="0.65" stroke-opacity="0.06"/>
+        </g>
+
+        <!-- Group 3: Subtle fill lines for depth -->
+        <g class="line-group-3">
+            <path d="M -80 800 C 300 600, 700 950, 1100 700 S 1480 480, 1560 820"
+                  fill="none" stroke="#3a9e25" stroke-width="1.0" stroke-opacity="0.08"/>
+            <path d="M -80 850 C 300 650, 700 1000, 1100 750 S 1480 530, 1560 870"
+                  fill="none" stroke="#3a9e25" stroke-width="0.6" stroke-opacity="0.055"/>
+
+            <path d="M 400 -80 C 600 260, 900 -60, 1200 280 S 1480 620, 1620 200"
+                  fill="none" stroke="#4db833" stroke-width="0.9" stroke-opacity="0.07"/>
+
+            <!-- A bolder, single accent arc like Anaconda uses for section dividers -->
+            <path d="M -200 950 C 400 500, 1000 900, 1700 350"
+                  fill="none" stroke="#3a9e25" stroke-width="2.2" stroke-opacity="0.07"/>
+            <path d="M -200 100 C 500 600, 1100 50, 1700 600"
+                  fill="none" stroke="#256b17" stroke-width="2.0" stroke-opacity="0.06"/>
+        </g>
+    </svg>
+</div>
+
+
+
+
+<!-- ═══════════════════════════════════════
+     LOADER
+═══════════════════════════════════════ -->
+<div id="pg-loader" class="loader-screen">
+    <i class="fa-solid fa-bolt loader-bolt"></i>
+    <div class="loader-name">Power<span>Grid</span></div>
+    <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE CONTENT
+═══════════════════════════════════════ -->
+<div class="page-wrapper" id="page-content" style="opacity:0;">
+
+    <!-- NAV -->
+    <nav class="top-nav" id="main-nav">
+        <a href="{% url 'user_dashboard' %}" style="text-decoration:none;">
+            <div class="logo">
+                <div class="logo-bolt"><i class="fa-solid fa-bolt"></i></div>
+                Power<span>Grid</span>
+            </div>
+        </a>
+
+        <div class="nav-links">
+            <a href="{% url 'user_dashboard' %}" class="active">Dashboard</a>
+            <a href="{% url 'bill_payment' %}">Billing</a>
+            <a href="{% url 'complaint_registration' %}">Complaints</a>
+            <a href="{% url 'connection_request' %}">Services</a>
+            <a href="{% url 'my_applications' %}">My Applications</a>
+            <a href="{% url 'faq' %}">FAQ</a>
+        </div>
+
+        <div class="nav-right">
+
+            <!-- Notification Bell -->
+            <a href="{% url 'accounts:notifications_view' %}" class="notif-btn" title="Notifications">
+                <i class="fa-solid fa-bell"></i>
+                {% if unread_notifications_count %}
+                <span class="notif-badge">{{ unread_notifications_count }}</span>
+                {% endif %}
+            </a>
+
+            <!-- Profile Dropdown -->
+            <div class="profile-wrap" id="profile-wrap">
+                <div class="profile-trigger" id="profile-trigger">
+                    <div class="nav-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+                    <span class="nav-username">{{ user.first_name|default:"User" }}</span>
+                    <i class="fa-solid fa-chevron-down profile-caret"></i>
+                </div>
+
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="dd-header">
+                        <div class="dd-name">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="dd-email">{{ user.email }}</div>
+                    </div>
+
+                    <a href="{% url 'accounts:user_profile' %}" class="dd-item">
+                        <i class="fa-solid fa-user"></i> My Profile
+                    </a>
+                    <a href="{% url 'accounts:change_password' %}" class="dd-item">
+                        <i class="fa-solid fa-lock"></i> Change Password
+                    </a>
+                    <a href="{% url 'accounts:consumer_numbers' %}" class="dd-item">
+                        <i class="fa-solid fa-id-card"></i> Consumer Numbers
+                    </a>
+                    <a href="{% url 'accounts:add_consumer_number' %}" class="dd-item">
+                        <i class="fa-solid fa-plus-circle"></i> Add Consumer Number
+                    </a>
+                    <a href="{% url 'accounts:email_preferences' %}" class="dd-item">
+                        <i class="fa-solid fa-envelope-open-text"></i> Email Preferences
+                    </a>
+                    <a href="{% url 'accounts:notifications_view' %}" class="dd-item">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                        {% if unread_notifications_count %}
+                        <span style="margin-left:auto; background:var(--red); color:#fff; font-size:0.62rem; font-weight:800; padding:1px 7px; border-radius:10px;">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </a>
+
+                    <div class="dd-divider"></div>
+
+                    <form action="{% url 'accounts:logout' %}" method="POST" style="padding:4px 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="dd-item danger" style="background:none; border:none; cursor:pointer; width:100%;">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- WELCOME -->
+    <section class="welcome-section reveal">
+        <div class="welcome-eyebrow"><i class="fa-solid fa-circle"></i> Live Dashboard</div>
+        <h1>Welcome back,<br><span class="hi-name">{{ user.get_full_name|default:user.username }}</span>.</h1>
+        <p>Your centralized dashboard for all state electricity services — connections, billing, complaints, and more.</p>
+    </section>
+
+    <!-- ── 6 STAT CARDS ── -->
+    <div class="stats-grid reveal">
+
+        <!-- 1. ConnectionRequest -->
+        <div class="stat-card sc-green">
+            <div class="stat-icon si-green"><i class="fa-solid fa-plug-circle-plus"></i></div>
+            <div class="stat-num sn-green counter" data-target="{{ connection_request_count|default:'0' }}">0</div>
+            <div class="stat-label">Connections</div>
+        </div>
+
+        <!-- 2. BillPayment -->
+        <div class="stat-card sc-amber">
+            <div class="stat-icon si-amber"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <div class="stat-num sn-amber counter" data-target="{{ bill_payment_count|default:'0' }}">0</div>
+            <div class="stat-label">Bill Payments</div>
+        </div>
+
+        <!-- 3. Complaint -->
+        <div class="stat-card sc-red">
+            <div class="stat-icon si-red"><i class="fa-solid fa-comment-exclamation"></i></div>
+            <div class="stat-num sn-red counter" data-target="{{ complaint_count|default:'0' }}">0</div>
+            <div class="stat-label">Complaints</div>
+        </div>
+
+        <!-- 4. PowerOutage -->
+        <div class="stat-card sc-green">
+            <div class="stat-icon si-green"><i class="fa-solid fa-bolt-lightning"></i></div>
+            <div class="stat-num sn-green counter" data-target="{{ outage_report_count|default:'0' }}">0</div>
+            <div class="stat-label">Outage Reports</div>
+        </div>
+
+        <!-- 5. MeterReading -->
+        <div class="stat-card sc-teal">
+            <div class="stat-icon si-teal"><i class="fa-solid fa-gauge-high"></i></div>
+            <div class="stat-num sn-teal counter" data-target="{{ meter_reading_count|default:'0' }}">0</div>
+            <div class="stat-label">Meter Readings</div>
+        </div>
+
+        <!-- 6. SupportTicket -->
+        <div class="stat-card sc-blue">
+            <div class="stat-icon si-blue"><i class="fa-solid fa-headset"></i></div>
+            <div class="stat-num sn-blue counter" data-target="{{ support_ticket_count|default:'0' }}">0</div>
+            <div class="stat-label">Support Tickets</div>
+        </div>
+
+    </div>
+
+    <!-- ── SPLIT: Sidebar + Connection Requests ── -->
+    <div class="content-split reveal">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-label">Quick Actions</div>
+            <a href="{% url 'bill_payment' %}" class="action-link">
+                <div class="al-icon ali-amber"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                Pay Bill
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+            <a href="{% url 'complaint_registration' %}" class="action-link">
+                <div class="al-icon ali-red"><i class="fa-solid fa-comment-dots"></i></div>
+                File Complaint
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+            <a href="{% url 'power_outage_report' %}" class="action-link">
+                <div class="al-icon ali-green"><i class="fa-solid fa-bolt-lightning"></i></div>
+                Report Outage
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+            <a href="{% url 'connection_request' %}" class="action-link">
+                <div class="al-icon ali-green"><i class="fa-solid fa-plug-circle-plus"></i></div>
+                New Connection
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+            <a href="{% url 'meter_reading_submission' %}" class="action-link">
+                <div class="al-icon ali-teal"><i class="fa-solid fa-gauge-high"></i></div>
+                Submit Reading
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+            <a href="{% url 'support_ticket' %}" class="action-link">
+                <div class="al-icon ali-blue"><i class="fa-solid fa-headset"></i></div>
+                Open Ticket
+                <i class="fa-solid fa-chevron-right al-arrow"></i>
+            </a>
+        </div>
+
+        <!-- Connection Requests Table -->
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-title"><i class="fa-solid fa-plug-circle-plus"></i> Connection Requests</div>
+                <span class="sec-pill">Recent 5</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request #</th>
+                            <th>Type</th>
+                            <th>Load</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in connection_requests|slice:":5" %}
+                        <tr>
+                            <td><span class="td-mono">{{ req.request_number }}</span></td>
+                            <td><span class="td-strong">{{ req.get_connection_type_display }}</span></td>
+                            <td>{{ req.get_estimated_load_display }}</td>
+                            <td><span class="badge badge-{{ req.status|lower }}">{{ req.get_status_display }}</span></td>
+                            <td style="color:var(--ink-soft);">{{ req.created_at|date:"M d, Y" }}</td>
+                            <td><a href="#" class="view-btn">View →</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6">
+                            <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No connection requests yet.</div>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Bill Payments (full width) ── -->
+    <div class="sec-card reveal" style="margin-bottom:26px;">
+        <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-file-invoice-dollar"></i> Bill Payments</div>
+            <span class="sec-pill">Recent 5</span>
+        </div>
+        <div class="tbl-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Consumer No.</th>
+                        <th>Billing Month</th>
+                        <th>Amount Paid</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in bill_payments|slice:":5" %}
+                    <tr>
+                        <td><span class="td-mono">{{ payment.payment_id }}</span></td>
+                        <td class="td-strong">{{ payment.consumer_number }}</td>
+                        <td>{{ payment.billing_month }}</td>
+                        <td style="color:var(--green);font-weight:800;">₹{{ payment.paid_amount }}</td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td><span class="badge badge-{{ payment.payment_status|lower }}">{{ payment.get_payment_status_display }}</span></td>
+                        <td style="color:var(--ink-soft);">{{ payment.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">
+                        <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No bill payments yet.</div>
+                    </td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Complaints + Outage Reports ── -->
+    <div class="two-col reveal">
+
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-title"><i class="fa-solid fa-comment-exclamation"></i> Complaints</div>
+                <span class="sec-pill">Recent 4</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complaint #</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in complaints|slice:":4" %}
+                        <tr>
+                            <td><span class="td-mono">{{ c.complaint_number }}</span></td>
+                            <td class="td-strong">{{ c.get_category_display }}</td>
+                            <td style="color:var(--amber);font-weight:700;">{{ c.get_priority_display }}</td>
+                            <td><span class="badge badge-{{ c.status|lower }}">{{ c.get_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">
+                            <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No complaints filed.</div>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-title"><i class="fa-solid fa-bolt-lightning"></i> Outage Reports</div>
+                <span class="sec-pill">Recent 4</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report #</th>
+                            <th>Type</th>
+                            <th>Area</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for outage in outage_reports|slice:":4" %}
+                        <tr>
+                            <td><span class="td-mono">{{ outage.report_number }}</span></td>
+                            <td class="td-strong">{{ outage.get_outage_type_display }}</td>
+                            <td style="color:var(--ink-soft);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ outage.area }}</td>
+                            <td><span class="badge badge-{{ outage.status|lower }}">{{ outage.get_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4">
+                            <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No outages reported.</div>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Meter Readings + Support Tickets ── -->
+    <div class="two-col reveal">
+
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-title"><i class="fa-solid fa-gauge-high"></i> Meter Readings</div>
+                <span class="sec-pill">Recent 4</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reading ID</th>
+                            <th>Consumer No.</th>
+                            <th>Units (kWh)</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reading in meter_readings|slice:":4" %}
+                        <tr>
+                            <td><span class="td-mono">{{ reading.reading_id }}</span></td>
+                            <td class="td-strong">{{ reading.consumer_number }}</td>
+                            <td>
+                                <span style="color:var(--teal);font-weight:800;">{{ reading.units_consumed }}</span>
+                                <div class="ubar-bg">
+                                    <div class="ubar-fill" data-w="{{ reading.units_consumed|floatformat:'0' }}"></div>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-{{ reading.status|lower }}">{{ reading.get_status_display }}</span></td>
+                            <td style="color:var(--ink-soft);">{{ reading.reading_date|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5">
+                            <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No meter readings yet.</div>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="sec-card">
+            <div class="sec-head">
+                <div class="sec-title"><i class="fa-solid fa-headset"></i> Support Tickets</div>
+                <span class="sec-pill">Recent 4</span>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Subject</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in support_tickets|slice:":4" %}
+                        <tr>
+                            <td><span class="td-mono">{{ ticket.ticket_number }}</span></td>
+                            <td class="td-strong" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ ticket.subject }}</td>
+                            <td style="color:var(--amber);font-weight:700;">{{ ticket.get_priority_display }}</td>
+                            <td><span class="badge badge-{{ ticket.status|lower }}">{{ ticket.get_status_display }}</span></td>
+                            <td style="color:var(--ink-soft);">{{ ticket.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5">
+                            <div class="empty-row"><i class="fa-regular fa-folder-open"></i>No support tickets open.</div>
+                        </td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+        <span class="footer-brand">Power<span>Grid</span></span>
+        <span>State Electricity Services &copy; {% now "Y" %}</span>
+    </div>
+
+</div><!-- /page-wrapper -->
+
+<script>
+(function () {
+
+    /* 1 — Loader dismiss */
+    window.addEventListener('load', function () {
+        var loader = document.getElementById('pg-loader');
+        var page   = document.getElementById('page-content');
+        var nav    = document.getElementById('main-nav');
+
+        setTimeout(function () {
+            loader.style.opacity    = '0';
+            loader.style.visibility = 'hidden';
+            page.style.opacity      = '1';
+            page.style.transition   = 'opacity 0.5s ease';
+            nav.style.opacity       = '1';
+            nav.style.transform     = 'translateY(0)';
+            initReveal();
+            animateCounters();
+        }, 750);
+    });
+
+    /* 2 — Scroll-triggered staggered reveal */
+    function initReveal() {
+        var els = document.querySelectorAll('.reveal');
+        var io  = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.07 });
+
+        els.forEach(function (el, i) {
+            el.style.transitionDelay = (i * 0.08) + 's';
+            io.observe(el);
+        });
+    }
+
+    /* 3 — Counter number animation */
+    function animateCounters() {
+        document.querySelectorAll('.counter').forEach(function (el) {
+            var target = parseInt(el.dataset.target) || 0;
+            if (!target) { el.textContent = '0'; return; }
+            var cur = 0;
+            var inc = Math.max(1, Math.floor(target / 52));
+            var t   = setInterval(function () {
+                cur += inc;
+                if (cur >= target) { el.textContent = target; clearInterval(t); }
+                else { el.textContent = cur; }
+            }, 26);
+        });
+    }
+
+    /* 4 — Animate meter reading bars on scroll */
+    var bObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.querySelectorAll('.ubar-fill').forEach(function (bar) {
+                    var raw = Math.min(parseInt(bar.dataset.w) || 0, 100);
+                    setTimeout(function () { bar.style.width = raw + '%'; }, 180);
+                });
+                bObs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.sec-card').forEach(function (c) { bObs.observe(c); });
+
+    /* 5 — Profile dropdown toggle */
+    var profileWrap    = document.getElementById('profile-wrap');
+    var profileTrigger = document.getElementById('profile-trigger');
+    if (profileTrigger) {
+        profileTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileWrap.classList.toggle('open');
+        });
+        document.addEventListener('click', function () {
+            profileWrap.classList.remove('open');
+        });
+        document.getElementById('profile-dropdown').addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+    }
+
+})();
+</script>
+</body>
+</html>
