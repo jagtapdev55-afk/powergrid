@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Applications — PowerGrid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito+Sans:wght@400;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--green:#3a9e25;--green-dark:#256b17;--green-light:rgba(58,158,37,0.10);
+      --green-xlight:rgba(58,158,37,0.05);--bg:#f4f7fa;--white:#fff;
+      --ink:#1a2332;--ink-mid:#4a5568;--ink-soft:#8898aa;
+      --border:#e8edf2;--border-mid:#d0d9e4;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,0.07);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);}
+    .top-nav{position:sticky;top:0;z-index:500;background:var(--white);
+      border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;
+      display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;
+      color:#0d1117;text-decoration:none;display:flex;align-items:center;gap:10px;}
+    .logo-bolt{width:30px;height:30px;background:var(--green);border-radius:7px;
+      display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;}
+    .logo span{color:var(--green);}
+    .nav-back{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-mid);
+      text-decoration:none;font-size:0.84rem;font-weight:700;padding:7px 16px;
+      border-radius:9px;border:1.5px solid var(--border);transition:all 0.18s;}
+    .nav-back:hover{background:var(--green-light);color:var(--green-dark);}
+    .page{max-width:960px;margin:0 auto;padding:36px 24px 80px;}
+    .page-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:#0d1117;margin-bottom:4px;}
+    .page-sub{font-size:0.85rem;color:var(--ink-soft);margin-bottom:28px;}
+    .tabs{display:flex;gap:4px;background:var(--white);border:1.5px solid var(--border);
+      border-radius:12px;padding:4px;margin-bottom:24px;overflow-x:auto;}
+    .tab-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:none;
+      background:transparent;border-radius:9px;font-family:'Nunito Sans',sans-serif;
+      font-size:0.82rem;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:all 0.18s;white-space:nowrap;}
+    .tab-btn.active{background:var(--green);color:#fff;}
+    .tab-btn:hover:not(.active){background:var(--bg);}
+    .tab-count{background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:0.72rem;}
+    .tab-btn.active .tab-count{background:rgba(255,255,255,0.25);}
+    .tab-panel{display:none;}
+    .tab-panel.active{display:block;}
+    .app-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);
+      padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow);transition:transform 0.15s;}
+    .app-card:hover{transform:translateY(-1px);}
+    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+    .card-ref{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--ink-soft);margin-bottom:4px;}
+    .card-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:#0d1117;}
+    .card-meta{font-size:0.8rem;color:var(--ink-soft);margin-top:3px;}
+    .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+      border-radius:20px;font-size:0.75rem;font-weight:800;white-space:nowrap;flex-shrink:0;}
+    .pill-pending,.pill-registered,.pill-submitted,.pill-open,.pill-reported{background:#eff6ff;color:#1d4ed8;}
+    .pill-under_review,.pill-acknowledged,.pill-processing{background:#fffbeb;color:#d97706;}
+    .pill-in_progress,.pill-investigating,.pill-repairing{background:#f0f9ff;color:#0369a1;}
+    .pill-site_inspection,.pill-awaiting_response,.pill-reopened{background:#faf5ff;color:#7c3aed;}
+    .pill-approved,.pill-completed,.pill-resolved,.pill-verified,.pill-billed{background:var(--green-light);color:var(--green-dark);}
+    .pill-rejected,.pill-failed,.pill-closed,.pill-cancelled{background:#fff5f5;color:#c53030;}
+    /* Timeline */
+    .timeline{display:flex;align-items:flex-start;gap:0;margin:14px 0 4px;overflow-x:auto;padding:4px 0 8px;}
+    .tl-step{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+    .tl-line{height:2px;width:40px;background:var(--border);margin-top:11px;flex-shrink:0;}
+    .tl-line.done{background:var(--green);}
+    .tl-dot{width:22px;height:22px;border-radius:50%;background:var(--border);border:2px solid var(--border-mid);
+      display:flex;align-items:center;justify-content:center;z-index:2;}
+    .tl-dot.done{background:var(--green);border-color:var(--green);}
+    .tl-dot.active{background:var(--white);border-color:var(--green);border-width:2.5px;}
+    .tl-label{font-size:0.65rem;font-weight:700;color:var(--ink-soft);margin-top:5px;
+      text-align:center;white-space:nowrap;max-width:58px;line-height:1.3;}
+    .tl-dot.done + .tl-label{color:var(--green-dark);}
+    .tl-dot.active + .tl-label{color:var(--ink);font-weight:800;}
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:p 1.4s ease-in-out infinite;}
+    @keyframes p{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.4);opacity:0.6;}}
+    .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
+      padding-top:12px;border-top:1.5px solid var(--border);flex-wrap:wrap;gap:8px;}
+    .card-date{font-size:0.78rem;color:var(--ink-soft);}
+    .btn-sm{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:8px;
+      font-size:0.78rem;font-weight:800;text-decoration:none;border:1.5px solid var(--border);
+      color:var(--ink-mid);background:var(--white);transition:all 0.18s;}
+    .btn-sm:hover{background:var(--bg);}
+    .btn-sm.green{background:var(--green);color:#fff;border-color:var(--green);}
+    .btn-sm.green:hover{background:var(--green-dark);}
+    .remark-box{background:var(--green-xlight);border:1.5px solid rgba(58,158,37,0.2);border-radius:8px;
+      padding:8px 12px;margin-top:10px;font-size:0.82rem;color:var(--ink-mid);}
+    .reject-box{background:#fff5f5;border:1.5px solid #fecaca;border-radius:8px;
+      padding:8px 12px;margin-top:10px;font-size:0.82rem;color:#c53030;}
+    .empty-state{text-align:center;padding:48px 20px;color:var(--ink-soft);}
+    .empty-state i{font-size:2.2rem;color:var(--border);margin-bottom:12px;display:block;}
+    .empty-state a{color:var(--green);font-weight:700;text-decoration:none;}
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="{% url 'user_dashboard' %}" class="logo">
+    <div class="logo-bolt"><i class="fa-solid fa-bolt"></i></div>
+    Power<span>Grid</span>
+  </a>
+  <a href="{% url 'user_dashboard' %}" class="nav-back">
+    <i class="fa-solid fa-arrow-left"></i> Dashboard
+  </a>
+</nav>
+
+<div class="page">
+  <div class="page-title">My Applications</div>
+  <div class="page-sub">Track all your submitted requests and their live status</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('connections',this)"><i class="fa-solid fa-plug"></i> Connections <span class="tab-count">{{ connection_requests|length }}</span></button>
+    <button class="tab-btn" onclick="showTab('payments',this)"><i class="fa-solid fa-receipt"></i> Payments <span class="tab-count">{{ bill_payments|length }}</span></button>
+    <button class="tab-btn" onclick="showTab('complaints',this)"><i class="fa-solid fa-triangle-exclamation"></i> Complaints <span class="tab-count">{{ complaints|length }}</span></button>
+    <button class="tab-btn" onclick="showTab('outages',this)"><i class="fa-solid fa-bolt"></i> Outages <span class="tab-count">{{ outage_reports|length }}</span></button>
+    <button class="tab-btn" onclick="showTab('meters',this)"><i class="fa-solid fa-gauge-high"></i> Meter Readings <span class="tab-count">{{ meter_readings|length }}</span></button>
+    <button class="tab-btn" onclick="showTab('tickets',this)"><i class="fa-solid fa-headset"></i> Support <span class="tab-count">{{ support_tickets|length }}</span></button>
+  </div>
+
+  <!-- CONNECTIONS -->
+  <div id="tab-connections" class="tab-panel active">
+    {% for req in connection_requests %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ req.request_number }}</div>
+          <div class="card-title">{{ req.get_connection_type_display }} Connection</div>
+          <div class="card-meta">{{ req.full_name }} &nbsp;·&nbsp; {{ req.city }}</div>
+        </div>
+        <span class="status-pill pill-{{ req.status }}">{{ req.get_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in req.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      {% if req.admin_remarks %}<div class="remark-box"><strong style="color:var(--green-dark);">Admin:</strong> {{ req.admin_remarks }}</div>{% endif %}
+      {% if req.rejection_reason %}<div class="reject-box"><strong>Rejection Reason:</strong> {{ req.rejection_reason }}</div>{% endif %}
+      <div class="card-footer"><div class="card-date"><i class="fa-regular fa-clock"></i> {{ req.created_at|date:"d M Y" }}</div></div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-plug"></i><p>No connection requests. <a href="{% url 'connection_request' %}">Apply now →</a></p></div>{% endfor %}
+  </div>
+
+  <!-- PAYMENTS -->
+  <div id="tab-payments" class="tab-panel">
+    {% for pay in bill_payments %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ pay.payment_id }}</div>
+          <div class="card-title">Bill Payment — {{ pay.billing_month }}</div>
+          <div class="card-meta">Consumer: {{ pay.consumer_number }} &nbsp;·&nbsp; ₹{{ pay.paid_amount }}</div>
+        </div>
+        <span class="status-pill pill-{{ pay.payment_status }}">{{ pay.get_payment_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in pay.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      <div class="card-footer">
+        <div class="card-date"><i class="fa-regular fa-clock"></i> {{ pay.created_at|date:"d M Y" }}</div>
+        {% if pay.payment_status == 'completed' %}<a href="{% url 'payment_receipt' pay.payment_id %}" class="btn-sm green"><i class="fa-solid fa-file-pdf"></i> Download Receipt</a>{% endif %}
+      </div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-receipt"></i><p>No payments yet. <a href="{% url 'bill_payment' %}">Pay your bill →</a></p></div>{% endfor %}
+  </div>
+
+  <!-- COMPLAINTS -->
+  <div id="tab-complaints" class="tab-panel">
+    {% for comp in complaints %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ comp.complaint_number }}</div>
+          <div class="card-title">{{ comp.subject }}</div>
+          <div class="card-meta">{{ comp.get_category_display }} &nbsp;·&nbsp; Priority: {{ comp.get_priority_display }}</div>
+        </div>
+        <span class="status-pill pill-{{ comp.status }}">{{ comp.get_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in comp.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      {% if comp.resolution_details %}<div class="remark-box"><strong style="color:var(--green-dark);">Resolution:</strong> {{ comp.resolution_details }}</div>{% endif %}
+      <div class="card-footer"><div class="card-date"><i class="fa-regular fa-clock"></i> {{ comp.created_at|date:"d M Y" }}</div></div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>No complaints. <a href="{% url 'complaint_registration' %}">Register one →</a></p></div>{% endfor %}
+  </div>
+
+  <!-- OUTAGES -->
+  <div id="tab-outages" class="tab-panel">
+    {% for out in outage_reports %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ out.report_number }}</div>
+          <div class="card-title">{{ out.get_outage_type_display }} — {{ out.area }}</div>
+          <div class="card-meta">Consumer: {{ out.consumer_number }}</div>
+        </div>
+        <span class="status-pill pill-{{ out.status }}">{{ out.get_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in out.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      <div class="card-footer"><div class="card-date"><i class="fa-regular fa-clock"></i> {{ out.created_at|date:"d M Y" }}</div></div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-bolt"></i><p>No outage reports. <a href="{% url 'power_outage_report' %}">Report one →</a></p></div>{% endfor %}
+  </div>
+
+  <!-- METER READINGS -->
+  <div id="tab-meters" class="tab-panel">
+    {% for mtr in meter_readings %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ mtr.reading_id }}</div>
+          <div class="card-title">Meter Reading — {{ mtr.reading_date }}</div>
+          <div class="card-meta">Consumer: {{ mtr.consumer_number }} &nbsp;·&nbsp; Units: {{ mtr.units_consumed }}</div>
+        </div>
+        <span class="status-pill pill-{{ mtr.status }}">{{ mtr.get_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in mtr.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      {% if mtr.admin_remarks %}<div class="remark-box"><strong>Remarks:</strong> {{ mtr.admin_remarks }}</div>{% endif %}
+      <div class="card-footer"><div class="card-date"><i class="fa-regular fa-clock"></i> {{ mtr.created_at|date:"d M Y" }}</div></div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-gauge-high"></i><p>No meter readings. <a href="{% url 'meter_reading_submission' %}">Submit one →</a></p></div>{% endfor %}
+  </div>
+
+  <!-- SUPPORT TICKETS -->
+  <div id="tab-tickets" class="tab-panel">
+    {% for tkt in support_tickets %}
+    <div class="app-card">
+      <div class="card-top">
+        <div>
+          <div class="card-ref">{{ tkt.ticket_number }}</div>
+          <div class="card-title">{{ tkt.subject }}</div>
+          <div class="card-meta">Priority: {{ tkt.get_priority_display }}</div>
+        </div>
+        <span class="status-pill pill-{{ tkt.status }}">{{ tkt.get_status_display }}</span>
+      </div>
+      <div class="timeline">{% for step in tkt.get_timeline_steps %}<div class="tl-step"><div class="tl-dot {% if step.done %}done{% elif step.active %}active{% endif %}">{% if step.done %}<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>{% elif step.active %}<div class="pulse"></div>{% endif %}</div><div class="tl-label {% if step.done %}done{% elif step.active %}active{% endif %}">{{ step.label }}</div></div>{% if not forloop.last %}<div class="tl-line {% if step.done %}done{% endif %}"></div>{% endif %}{% endfor %}</div>
+      <div class="card-footer">
+        <div class="card-date"><i class="fa-regular fa-clock"></i> {{ tkt.created_at|date:"d M Y" }}</div>
+        <a href="{% url 'ticket_detail' tkt.pk %}" class="btn-sm green"><i class="fa-solid fa-comments"></i> View Thread</a>
+      </div>
+    </div>
+    {% empty %}<div class="empty-state"><i class="fa-solid fa-headset"></i><p>No support tickets. <a href="{% url 'support_ticket' %}">Create one →</a></p></div>{% endfor %}
+  </div>
+
+</div>
+
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

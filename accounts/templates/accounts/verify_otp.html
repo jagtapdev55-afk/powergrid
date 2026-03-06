@@ -1,0 +1,227 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PowerGrid | Verify Email</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+
+        /* Left Side: Authority Image */
+        .hero-section {
+            flex: 1.2;
+            position: relative;
+            background-image: url('{% static "images/gettyimages-979872784-612x612.jpg" %}');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4rem;
+            color: white;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(37, 99, 235, 0.85) 100%);
+        }
+
+        .hero-content { position: relative; z-index: 10; }
+        
+        .hero-logo { 
+            font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px; margin-bottom: auto;
+        }
+
+        .hero-text { margin-top: auto; }
+        .hero-text h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; font-weight: 700; }
+        .hero-text p { font-size: 1.2rem; color: #e0f2fe; max-width: 450px; line-height: 1.6; }
+
+        .hero-features { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+        .feature-item { display: flex; align-items: center; gap: 12px; color: #bae6fd; font-size: 0.95rem; }
+        .feature-item i { color: #38bdf8; font-size: 1.1rem; }
+
+        /* Right Side: Verification Form */
+        .form-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            background: #ffffff;
+            overflow-y: auto;
+        }
+
+        .auth-container { width: 100%; max-width: 440px; }
+        .auth-header { margin-bottom: 2rem; text-align: center; }
+        .auth-container h2 { font-size: 2rem; color: #0f172a; margin-bottom: 0.5rem; }
+        .auth-container .subtitle { color: #64748b; font-size: 1rem; line-height: 1.5; }
+        .auth-container .highlight-email { color: #0f172a; font-weight: 600; }
+
+        /* Alerts/Messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 2rem; }
+        .auth-container label { display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.8rem; text-align: center; }
+        
+        .otp-input-wrapper {
+            position: relative;
+        }
+
+        .auth-container input[type="text"] {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.5rem;
+            text-align: center;
+            transition: all 0.2s;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .auth-container input[type="text"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover { 
+            background: #1d4ed8; 
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .auth-links { 
+            text-align: center; 
+            color: #64748b; 
+            font-size: 0.95rem; 
+            margin-top: 1.5rem;
+        }
+
+        .auth-links a { color: #2563eb; font-weight: 600; text-decoration: none; }
+        .auth-links a:hover { text-decoration: underline; }
+        
+        @media (max-width: 968px) {
+            body { flex-direction: column; }
+            .hero-section { min-height: 250px; padding: 2rem; }
+            .hero-text h1 { font-size: 2.2rem; }
+            .hero-features { display: none; }
+            .form-section { padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-logo">
+                <i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> PowerGrid
+            </div>
+            
+            <div class="hero-text">
+                <h1>Secure<br>Verification</h1>
+                <p>Protecting state infrastructure with multi-factor authentication and identity verification.</p>
+                
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <i class="fa-solid fa-shield-check"></i>
+                        <span>Encrypted session management</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Time-sensitive access codes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="auth-container">
+            
+            <div class="auth-header">
+                <div style="width: 60px; height: 60px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                    <i class="fa-solid fa-envelope-open-text" style="font-size: 1.5rem; color: #2563eb;"></i>
+                </div>
+                <h2>Check your email</h2>
+                <p class="subtitle">We've sent a 6-digit verification code to <br><span class="highlight-email">{{ email }}</span></p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                        <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'accounts:verify_otp' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="otp_code">Enter Verification Code</label>
+                    <div class="otp-input-wrapper">
+                        <input type="text" name="otp_code" id="otp_code" maxlength="6" pattern="\d{6}" required placeholder="••••••" autocomplete="off" autofocus>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-shield-halved" style="margin-right: 0.5rem;"></i>
+                    Verify Account
+                </button>
+            </form>
+
+            <div class="auth-links">
+                Didn't receive the code? <br><br>
+                <a href="{% url 'accounts:resend_otp' %}">
+                    <i class="fa-solid fa-rotate-right"></i> Resend OTP Code
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
