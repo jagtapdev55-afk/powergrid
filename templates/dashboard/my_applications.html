@@ -1,0 +1,536 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications - PowerGrid</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Background Effects */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(0deg, transparent 24%, rgba(0, 255, 157, 0.05) 25%, rgba(0, 255, 157, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 157, 0.05) 75%, rgba(0, 255, 157, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 255, 157, 0.05) 25%, rgba(0, 255, 157, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 157, 0.05) 75%, rgba(0, 255, 157, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            z-index: 0;
+        }
+        
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #00ff9d 0%, transparent 70%);
+            top: -150px;
+            left: -150px;
+            animation: float 15s ease-in-out infinite;
+        }
+        
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #00d4ff 0%, transparent 70%);
+            bottom: -100px;
+            right: -100px;
+            animation: float 20s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(50px, 50px); }
+        }
+        
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00ff9d;
+            color: #00ff9d;
+            transform: translateX(-5px);
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .page-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #00ff9d, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+        
+        .page-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+        }
+        
+        /* Section */
+        .section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 255, 157, 0.2);
+        }
+        
+        .section h2 {
+            font-size: 1.5rem;
+            color: #00ff9d;
+        }
+        
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            color: #00ff9d;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            background: rgba(0, 255, 157, 0.05);
+        }
+        
+        td {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .status-under_review, .status-acknowledged, .status-investigating {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+        }
+        
+        .status-approved, .status-completed, .status-verified, .status-resolved {
+            background: rgba(0, 255, 157, 0.2);
+            color: #00ff9d;
+        }
+        
+        .status-rejected, .status-failed {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        .status-site_inspection, .status-in_progress, .status-repairing {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+        }
+        
+        .status-submitted, .status-registered, .status-reported, .status-open {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+        
+        /* Priority Badges */
+        .priority-low {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .priority-medium {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+        
+        .priority-high, .priority-urgent {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #00ff9d, #00d4ff);
+            border-color: transparent;
+            color: #000000;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            table {
+                font-size: 0.85rem;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    
+    <div class="container">
+        <a href="{% url 'user_dashboard' %}" class="back-btn">
+            ← Back to Dashboard
+        </a>
+        
+        <div class="page-header">
+            <div class="page-icon">📋</div>
+            <h1>My Applications</h1>
+            <p>Track all your submitted applications</p>
+        </div>
+        
+        <!-- Connection Requests -->
+        {% if connection_requests %}
+        <div class="section">
+            <div class="section-header">
+                <h2>🔌 Connection Requests</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request #</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in connection_requests %}
+                        <tr>
+                            <td><strong>{{ request.request_number }}</strong></td>
+                            <td>{{ request.get_connection_type_display }}</td>
+                            <td>
+                                <span class="status-badge status-{{ request.status }}">
+                                    {{ request.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ request.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Complaints -->
+        {% if complaints %}
+        <div class="section">
+            <div class="section-header">
+                <h2>📞 Complaints</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complaint #</th>
+                            <th>Category</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                        <tr>
+                            <td><strong>{{ complaint.complaint_number }}</strong></td>
+                            <td>{{ complaint.get_category_display }}</td>
+                            <td>{{ complaint.subject|truncatewords:5 }}</td>
+                            <td>
+                                <span class="status-badge status-{{ complaint.status }}">
+                                    {{ complaint.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge priority-{{ complaint.priority }}">
+                                    {{ complaint.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>{{ complaint.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Power Outages -->
+        {% if outage_reports %}
+        <div class="section">
+            <div class="section-header">
+                <h2>⚡ Power Outage Reports</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report #</th>
+                            <th>Area</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for outage in outage_reports %}
+                        <tr>
+                            <td><strong>{{ outage.report_number }}</strong></td>
+                            <td>{{ outage.area }}</td>
+                            <td>{{ outage.get_outage_type_display }}</td>
+                            <td>
+                                <span class="status-badge status-{{ outage.status }}">
+                                    {{ outage.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ outage.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Meter Readings -->
+        {% if meter_readings %}
+        <div class="section">
+            <div class="section-header">
+                <h2>📊 Meter Readings</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reading #</th>
+                            <th>Consumer #</th>
+                            <th>Reading Date</th>
+                            <th>Units</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reading in meter_readings %}
+                        <tr>
+                            <td><strong>{{ reading.reading_id }}</strong></td>
+                            <td>{{ reading.consumer_number }}</td>
+                            <td>{{ reading.reading_date|date:"M d, Y" }}</td>
+                            <td>{{ reading.units_consumed }} kWh</td>
+                            <td>
+                                <span class="status-badge status-{{ reading.status }}">
+                                    {{ reading.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ reading.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Support Tickets -->
+        {% if support_tickets %}
+        <div class="section">
+            <div class="section-header">
+                <h2>💬 Support Tickets</h2>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in support_tickets %}
+                        <tr>
+                            <td><strong>{{ ticket.ticket_number }}</strong></td>
+                            <td>{{ ticket.subject|truncatewords:5 }}</td>
+                            <td>
+                                <span class="status-badge status-{{ ticket.status }}">
+                                    {{ ticket.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge priority-{{ ticket.priority }}">
+                                    {{ ticket.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>{{ ticket.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Empty State (if no applications) -->
+        {% if not connection_requests and not complaints and not outage_reports and not meter_readings and not support_tickets %}
+        <div class="section">
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <h3>No Applications Yet</h3>
+                <p>You haven't submitted any applications. Start using our services to see them here.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
