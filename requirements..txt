@@ -1,0 +1,5 @@
+Django==6.0.1
+django-unfold
+psycopg2-binary
+python-decouple
+reportlab
