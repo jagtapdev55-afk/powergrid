@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import path, reverse
 import csv
 from unfold.admin import ModelAdmin
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 from django.contrib import messages
 from django.db import models as db_models
 from django.forms import DateTimeInput, TextInput
@@ -45,31 +45,31 @@ def mark_approved(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'approved'
         obj.save()
-mark_approved.short_description = "✅ Mark selected as Approved"
+mark_approved.short_description = "Mark selected as Approved"
 
 def mark_rejected(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'rejected'
         obj.save()
-mark_rejected.short_description = "❌ Mark selected as Rejected"
+mark_rejected.short_description = "Mark selected as Rejected"
 
 def mark_completed(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'completed'
         obj.save()
-mark_completed.short_description = "🎉 Mark selected as Completed"
+mark_completed.short_description = "Mark selected as Completed"
 
 def mark_in_progress(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'in_progress'
         obj.save()
-mark_in_progress.short_description = "🔧 Mark selected as In Progress"
+mark_in_progress.short_description = "Mark selected as In Progress"
 
 def mark_resolved(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'resolved'
         obj.save()
-mark_resolved.short_description = "✅ Mark selected as Resolved"
+mark_resolved.short_description = "Mark selected as Resolved"
 
 def mark_payment_completed(modeladmin, request, queryset):
     from django.utils import timezone
@@ -77,37 +77,37 @@ def mark_payment_completed(modeladmin, request, queryset):
         obj.payment_status = 'completed'
         obj.payment_date = timezone.now()
         obj.save()
-mark_payment_completed.short_description = "✅ Mark payments as Completed"
+mark_payment_completed.short_description = "Mark payments as Completed"
 
 def mark_payment_failed(modeladmin, request, queryset):
     for obj in queryset:
         obj.payment_status = 'failed'
         obj.save()
-mark_payment_failed.short_description = "❌ Mark payments as Failed"
+mark_payment_failed.short_description = "Mark payments as Failed"
 
 def mark_meter_verified(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'verified'
         obj.save()
-mark_meter_verified.short_description = "✅ Verify selected meter readings"
+mark_meter_verified.short_description = "Verify selected meter readings"
 
 def mark_meter_rejected(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'rejected'
         obj.save()
-mark_meter_rejected.short_description = "❌ Reject selected meter readings"
+mark_meter_rejected.short_description = "Reject selected meter readings"
 
 def mark_ticket_resolved(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'resolved'
         obj.save()
-mark_ticket_resolved.short_description = "✅ Mark tickets as Resolved"
+mark_ticket_resolved.short_description = "Mark tickets as Resolved"
 
 def mark_ticket_closed(modeladmin, request, queryset):
     for obj in queryset:
         obj.status = 'closed'
         obj.save()
-mark_ticket_closed.short_description = "🔒 Close selected tickets"
+mark_ticket_closed.short_description = "Close selected tickets"
 
 def send_reminder_email(modeladmin, request, queryset):
     """Send a reminder email to all selected users"""
@@ -127,7 +127,7 @@ def send_reminder_email(modeladmin, request, queryset):
         except Exception:
             pass
     modeladmin.message_user(request, f"Reminder sent to {count} user(s).")
-send_reminder_email.short_description = "📧 Send reminder email to selected users"
+send_reminder_email.short_description = "Send reminder email to selected users"
 
 
 
@@ -192,8 +192,8 @@ class ConnectionRequestAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/approve/', self.admin_site.admin_view(self.approve_view), name='connectionrequest_approve'),
-            path('<int:pk>/reject/',  self.admin_site.admin_view(self.reject_view),  name='connectionrequest_reject'),
+            path('<int:pk>/approve/', self.admin_site.admin_view(self.approve_view), name='myapp_connectionrequest_approve'),
+            path('<int:pk>/reject/',  self.admin_site.admin_view(self.reject_view),  name='myapp_connectionrequest_reject'),
         ]
         return custom + urls
 
@@ -321,8 +321,7 @@ if admin.site.is_registered(BillPayment):
 
 @admin.register(BillPayment)
 class BillPaymentAdmin(ModelAdmin):
-    list_display = ['payment_id', 'consumer_number', 'billing_month', 'paid_amount', 'payment_status_badge', 'payment_date']
-    list_display_actions = ['complete', 'fail']
+    list_display = ['payment_id', 'consumer_number', 'billing_month', 'paid_amount', 'payment_status_badge', 'payment_date', 'quick_payment_actions']
     list_filter = ['payment_status', 'payment_method', 'created_at']
     search_fields = ['payment_id', 'consumer_number', 'transaction_id']
     readonly_fields = ['payment_id', 'created_at', 'updated_at']
@@ -365,8 +364,8 @@ class BillPaymentAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/complete/', self.admin_site.admin_view(self.complete_view), name='complete'),
-            path('<int:pk>/fail/',     self.admin_site.admin_view(self.fail_view),     name='fail'),
+            path('<int:pk>/complete/', self.admin_site.admin_view(self.complete_view), name='myapp_billpayment_complete'),
+            path('<int:pk>/fail/',     self.admin_site.admin_view(self.fail_view),     name='myapp_billpayment_fail'),
         ]
         return custom + urls
 
@@ -377,14 +376,28 @@ class BillPaymentAdmin(ModelAdmin):
         obj.payment_date = timezone.now()
         obj.save()
         messages.success(request, f'✅ Payment {obj.payment_id} marked completed.')
-        return HttpResponseRedirect(reverse('myapp_billpayment_changelist', current_app=self.admin_site.name))
+        return HttpResponseRedirect(reverse('admin:myapp_billpayment_changelist'))
 
     def fail_view(self, request, pk):
         obj = BillPayment.objects.get(pk=pk)
         obj.payment_status = 'failed'
         obj.save()
         messages.success(request, f'❌ Payment {obj.payment_id} marked failed.')
-        return HttpResponseRedirect(reverse('myapp_billpayment_changelist', current_app=self.admin_site.name))
+        return HttpResponseRedirect(reverse('admin:myapp_billpayment_changelist'))
+
+    def quick_payment_actions(self, obj):
+        if obj.payment_status in ('completed', 'failed', 'refunded'):
+            return mark_safe('<span style="color:#999;font-size:0.78rem;">—</span>')
+        complete_url = reverse('admin:myapp_billpayment_complete', args=[obj.pk])
+        fail_url     = reverse('admin:myapp_billpayment_fail', args=[obj.pk])
+        return format_html(
+            '<a href="{}" style="background:#3a9e25;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;margin-right:4px;">✅ Complete</a>'
+            '&nbsp;<a href="{}" style="background:#e53e3e;color:#fff;padding:4px 10px;'
+            'border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;">❌ Fail</a>',
+            complete_url, fail_url
+        )
+    quick_payment_actions.short_description = 'Quick Actions'
 
 if admin.site.is_registered(Complaint):
     admin.site.unregister(Complaint)
@@ -459,8 +472,8 @@ class ComplaintAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/resolve/', self.admin_site.admin_view(self.resolve_view),    name='complaint_resolve'),
-            path('<int:pk>/progress/', self.admin_site.admin_view(self.progress_view), name='complaint_progress'),
+            path('<int:pk>/resolve/', self.admin_site.admin_view(self.resolve_view),    name='myapp_complaint_resolve'),
+            path('<int:pk>/progress/', self.admin_site.admin_view(self.progress_view), name='myapp_complaint_progress'),
         ]
         return custom + urls
 
@@ -590,7 +603,7 @@ class MeterReadingAdmin(ModelAdmin):
 
     def quick_meter_actions(self, obj):
         if obj.status in ('verified', 'billed'):
-            return format_html('<span style="color:#999;font-size:0.78rem;">—</span>')
+            return mark_safe('<span style="color:#999;font-size:0.78rem;">—</span>')
         verify_url = reverse('admin:myapp_meterreading_verify', args=[obj.pk])
         reject_url = reverse('admin:myapp_meterreading_reject', args=[obj.pk])
         return format_html(
@@ -606,8 +619,8 @@ class MeterReadingAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/verify/', self.admin_site.admin_view(self.verify_view), name='meterreading_verify'),
-            path('<int:pk>/reject/', self.admin_site.admin_view(self.reject_view), name='meterreading_reject'),
+            path('<int:pk>/verify/', self.admin_site.admin_view(self.verify_view), name='myapp_meterreading_verify'),
+            path('<int:pk>/reject/', self.admin_site.admin_view(self.reject_view), name='myapp_meterreading_reject'),
         ]
         return custom + urls
 
@@ -719,8 +732,8 @@ class SupportTicketAdmin(ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom = [
-            path('<int:pk>/resolve/', self.admin_site.admin_view(self.resolve_view), name='supportticket_resolve'),
-            path('<int:pk>/close/',   self.admin_site.admin_view(self.close_view),   name='supportticket_close'),
+            path('<int:pk>/resolve/', self.admin_site.admin_view(self.resolve_view), name='myapp_supportticket_resolve'),
+            path('<int:pk>/close/',   self.admin_site.admin_view(self.close_view),   name='myapp_supportticket_close'),
         ]
         return custom + urls
 
@@ -740,7 +753,7 @@ class SupportTicketAdmin(ModelAdmin):
 
     def quick_ticket_actions(self, obj):
         if obj.status in ('resolved', 'closed'):
-            return format_html('<span style="color:#999;font-size:0.78rem;">—</span>')
+            return mark_safe('<span style="color:#999;font-size:0.78rem;">—</span>')
         resolve_url = reverse('admin:myapp_supportticket_resolve', args=[obj.pk])
         close_url   = reverse('admin:myapp_supportticket_close',   args=[obj.pk])
         return format_html(

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerGrid</title>
+<style>
+  body{margin:0;padding:0;background:#f4f7fa;font-family:'Segoe UI',Arial,sans-serif;}
+  .wrapper{max-width:600px;margin:0 auto;padding:32px 16px;}
+  .card{background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
+  .header{background:#3a9e25;padding:28px 32px;display:flex;align-items:center;}
+  .header-bolt{width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:8px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;}
+  .header-logo{font-size:22px;font-weight:900;color:#ffffff;letter-spacing:2px;}
+  .body{padding:32px;}
+  .greeting{font-size:16px;color:#1a2332;font-weight:700;margin-bottom:8px;}
+  .intro{font-size:14px;color:#4a5568;line-height:1.6;margin-bottom:24px;}
+  .status-badge{display:inline-block;padding:6px 18px;border-radius:20px;font-size:13px;font-weight:800;margin-bottom:20px;}
+  .badge-success{background:#f0fdf4;color:#256b17;border:1.5px solid #bbf7d0;}
+  .badge-error{background:#fff5f5;color:#c53030;border:1.5px solid #fecaca;}
+  .badge-warning{background:#fffbeb;color:#d97706;border:1.5px solid #fde68a;}
+  .badge-info{background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe;}
+  .detail-table{width:100%;border-collapse:collapse;margin-bottom:24px;border-radius:10px;overflow:hidden;border:1.5px solid #e8edf2;}
+  .detail-table tr:nth-child(even){background:#f8fafc;}
+  .detail-table td{padding:10px 14px;font-size:13px;}
+  .detail-table td:first-child{color:#8898aa;font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;width:40%;}
+  .detail-table td:last-child{color:#1a2332;font-weight:600;}
+  .highlight-box{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:16px 20px;margin-bottom:24px;}
+  .highlight-box.warning{background:#fffbeb;border-color:#fde68a;}
+  .highlight-box.error{background:#fff5f5;border-color:#fecaca;}
+  .highlight-label{font-size:11px;font-weight:800;color:#3a9e25;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+  .highlight-label.warning{color:#d97706;}
+  .highlight-value{font-size:15px;font-weight:700;color:#1a2332;}
+  .btn{display:inline-block;background:#3a9e25;color:#ffffff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:800;font-size:14px;margin-top:8px;}
+  .divider{border:none;border-top:1.5px solid #e8edf2;margin:24px 0;}
+  .footer{background:#f8fafc;padding:20px 32px;text-align:center;border-top:1.5px solid #e8edf2;}
+  .footer p{font-size:12px;color:#8898aa;margin:4px 0;line-height:1.6;}
+  .footer a{color:#3a9e25;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+    <div class="header">
+      <span class="header-bolt">⚡</span>
+      <span class="header-logo">PowerGrid</span>
+    </div>
+    <div class="body">
+      {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+      <p>This email was sent by <strong>PowerGrid Electricity Services</strong></p>
+      <p>📞 1800-XXX-XXXX &nbsp;|&nbsp; ✉️ <a href="mailto:support@powergrid.com">support@powergrid.com</a></p>
+      <p style="margin-top:8px;font-size:11px;">This is an automated message. Please do not reply directly to this email.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

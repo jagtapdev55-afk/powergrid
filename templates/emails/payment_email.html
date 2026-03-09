@@ -1,0 +1,17 @@
+{% extends 'emails/base_email.html' %}
+{% block content %}
+<p class="greeting">Dear {{ user_name }},</p>
+<p class="intro">{% if is_confirmed %}Your payment has been confirmed.{% else %}Your payment has been initiated.{% endif %}</p>
+<span class="status-badge badge-{{ badge_type }}">{{ status_label }}</span>
+<div class="highlight-box"><div class="highlight-label">Amount {{ action }}</div><div class="highlight-value">Rs {{ amount }}</div></div>
+<table class="detail-table">
+  <tr><td>Payment ID</td><td>{{ payment_id }}</td></tr>
+  <tr><td>Consumer Number</td><td>{{ consumer_number }}</td></tr>
+  <tr><td>Billing Month</td><td>{{ billing_month }}</td></tr>
+  <tr><td>Payment Method</td><td>{{ payment_method }}</td></tr>
+  <tr><td>Status</td><td><strong>{{ status_label }}</strong></td></tr>
+  {% if transaction_id %}<tr><td>Transaction ID</td><td>{{ transaction_id }}</td></tr>{% endif %}
+  {% if payment_date %}<tr><td>Payment Date</td><td>{{ payment_date }}</td></tr>{% endif %}
+</table>
+{% if is_confirmed %}<a href="{{ receipt_url }}" class="btn">⬇ Download Receipt PDF</a>{% endif %}
+{% endblock %}

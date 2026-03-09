@@ -321,6 +321,20 @@ class BillPayment(models.Model):
         
         super().save(*args, **kwargs)
     
+    def get_timeline_steps(self):
+        order  = ['pending','processing','completed']
+        labels = {'pending':'Pending','processing':'Processing','completed':'Confirmed'}
+        if self.payment_status == 'failed':
+            return [{'label':'Pending','done':True,'active':False},{'label':'Failed','done':False,'active':True}]
+        if self.payment_status == 'refunded':
+            return [{'label':'Pending','done':True,'active':False},{'label':'Completed','done':True,'active':False},{'label':'Refunded','done':False,'active':True}]
+        steps,reached=[],False
+        for s in order:
+            if s==self.payment_status: steps.append({'label':labels[s],'done':False,'active':True}); reached=True
+            elif not reached: steps.append({'label':labels[s],'done':True,'active':False})
+            else: steps.append({'label':labels[s],'done':False,'active':False})
+        return steps
+
     def __str__(self):
         return f"{self.payment_id} - {self.consumer_number} - ₹{self.paid_amount}"
 
@@ -417,23 +431,15 @@ class Complaint(models.Model):
     
 
     def get_timeline_steps(self):
-        order  = ['registered', 'acknowledged', 'in_progress', 'resolved', 'closed']
-        labels = {'registered':'Registered','acknowledged':'Acknowledged',
-                  'in_progress':'In Progress','resolved':'Resolved','closed':'Closed'}
+        order  = ['registered','acknowledged','in_progress','resolved','closed']
+        labels = {'registered':'Registered','acknowledged':'Acknowledged','in_progress':'In Progress','resolved':'Resolved','closed':'Closed'}
         if self.status == 'reopened':
-            return [{'label':'Registered','done':True,'active':False},
-                    {'label':'Resolved','done':True,'active':False},
-                    {'label':'Reopened','done':False,'active':True}]
-        steps = []
-        reached = False
+            return [{'label':'Registered','done':True,'active':False},{'label':'Resolved','done':True,'active':False},{'label':'Reopened','done':False,'active':True}]
+        steps,reached=[],False
         for s in order:
-            if s == self.status:
-                steps.append({'label': labels[s], 'done': False, 'active': True})
-                reached = True
-            elif not reached:
-                steps.append({'label': labels[s], 'done': True, 'active': False})
-            else:
-                steps.append({'label': labels[s], 'done': False, 'active': False})
+            if s==self.status: steps.append({'label':labels[s],'done':False,'active':True}); reached=True
+            elif not reached: steps.append({'label':labels[s],'done':True,'active':False})
+            else: steps.append({'label':labels[s],'done':False,'active':False})
         return steps
 
     def __str__(self):
@@ -603,6 +609,18 @@ class MeterReading(models.Model):
         
         super().save(*args, **kwargs)
     
+    def get_timeline_steps(self):
+        order  = ['submitted','verified','billed']
+        labels = {'submitted':'Submitted','verified':'Verified','billed':'Billed'}
+        if self.status == 'rejected':
+            return [{'label':'Submitted','done':True,'active':False},{'label':'Rejected','done':False,'active':True}]
+        steps,reached=[],False
+        for s in order:
+            if s==self.status: steps.append({'label':labels[s],'done':False,'active':True}); reached=True
+            elif not reached: steps.append({'label':labels[s],'done':True,'active':False})
+            else: steps.append({'label':labels[s],'done':False,'active':False})
+        return steps
+
     def __str__(self):
         return f"{self.reading_id} - {self.consumer_number} - {self.units_consumed} units"
 
@@ -701,6 +719,18 @@ class SupportTicket(models.Model):
         
         super().save(*args, **kwargs)
     
+    def get_timeline_steps(self):
+        order  = ['open','in_progress','resolved','closed']
+        labels = {'open':'Open','in_progress':'In Progress','resolved':'Resolved','closed':'Closed'}
+        if self.status == 'awaiting_response':
+            return [{'label':'Open','done':True,'active':False},{'label':'In Progress','done':True,'active':False},{'label':'Awaiting You','done':False,'active':True},{'label':'Resolved','done':False,'active':False}]
+        steps,reached=[],False
+        for s in order:
+            if s==self.status: steps.append({'label':labels[s],'done':False,'active':True}); reached=True
+            elif not reached: steps.append({'label':labels[s],'done':True,'active':False})
+            else: steps.append({'label':labels[s],'done':False,'active':False})
+        return steps
+
     def __str__(self):
         return f"{self.ticket_number} - {self.subject}"
 

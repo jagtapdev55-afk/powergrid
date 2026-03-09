@@ -1,0 +1,15 @@
+{% extends 'emails/base_email.html' %}
+{% block content %}
+<p class="greeting">Dear PowerGrid Customer,</p>
+<p class="intro">We want to inform you about a scheduled power maintenance in your area.</p>
+<span class="status-badge badge-warning">⚠ Planned Outage</span>
+<div class="highlight-box warning"><div class="highlight-label warning">Affected Areas</div><div class="highlight-value">{{ areas }}</div></div>
+<table class="detail-table">
+  <tr><td>Title</td><td>{{ title }}</td></tr>
+  <tr><td>Start Time</td><td>{{ start_datetime }}</td></tr>
+  <tr><td>End Time</td><td>{{ end_datetime }}</td></tr>
+  <tr><td>Duration</td><td>Approximately {{ duration }}</td></tr>
+  <tr><td>Reason</td><td>{{ reason }}</td></tr>
+</table>
+<p style="font-size:13px;color:#4a5568;line-height:1.6;">We apologize for the inconvenience. Please plan accordingly and keep your devices charged before the scheduled time.</p>
+{% endblock %}

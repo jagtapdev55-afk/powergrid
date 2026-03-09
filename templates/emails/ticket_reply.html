@@ -1,0 +1,12 @@
+{% extends 'emails/base_email.html' %}
+{% block content %}
+<p class="greeting">Dear {{ user_name }},</p>
+<p class="intro">PowerGrid support has replied to your ticket.</p>
+<table class="detail-table">
+  <tr><td>Ticket No</td><td>{{ ticket_number }}</td></tr>
+  <tr><td>Subject</td><td>{{ subject }}</td></tr>
+  <tr><td>Status</td><td>{{ status }}</td></tr>
+</table>
+<div class="highlight-box"><div class="highlight-label">Staff Reply</div><div class="highlight-value" style="font-size:14px;font-weight:400;color:#1a2332;line-height:1.7;">{{ reply_message }}</div></div>
+<a href="{{ ticket_url }}" class="btn">View Full Conversation</a>
+{% endblock %}

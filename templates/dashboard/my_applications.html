@@ -111,7 +111,6 @@
     <button class="tab-btn" onclick="showTab('meters',this)"><i class="fa-solid fa-gauge-high"></i> Meter Readings <span class="tab-count">{{ meter_readings|length }}</span></button>
     <button class="tab-btn" onclick="showTab('tickets',this)"><i class="fa-solid fa-headset"></i> Support <span class="tab-count">{{ support_tickets|length }}</span></button>
   </div>
-
   <!-- CONNECTIONS -->
   <div id="tab-connections" class="tab-panel active">
     {% for req in connection_requests %}
@@ -189,7 +188,6 @@
     </div>
     {% empty %}<div class="empty-state"><i class="fa-solid fa-bolt"></i><p>No outage reports. <a href="{% url 'power_outage_report' %}">Report one →</a></p></div>{% endfor %}
   </div>
-
   <!-- METER READINGS -->
   <div id="tab-meters" class="tab-panel">
     {% for mtr in meter_readings %}
