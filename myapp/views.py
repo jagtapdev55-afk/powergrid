@@ -662,3 +662,172 @@ def ticket_detail_view(request, ticket_id):
         'ticket': ticket,
         'replies': replies,
     })
+
+
+# ══════════════════════════════════════════════════════════════
+# FEATURE 1: PDF RECEIPT DOWNLOAD
+# ══════════════════════════════════════════════════════════════
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+import io
+
+@login_required
+def download_payment_receipt(request, payment_id):
+    """Generate and download PDF receipt for a bill payment."""
+    from .models import BillPayment
+    payment = get_object_or_404(BillPayment, payment_id=payment_id, user=request.user)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm)
+
+    GREEN  = colors.HexColor('#3a9e25')
+    BLACK  = colors.HexColor('#0d1117')
+    GRAY   = colors.HexColor('#4a5568')
+    LGRAY  = colors.HexColor('#f4f7fa')
+    WHITE  = colors.white
+
+    styles = getSampleStyleSheet()
+
+    def sty(name, **kw):
+        s = ParagraphStyle(name, **kw)
+        return s
+
+    title_sty  = sty('Title2',  fontSize=22, textColor=WHITE,     fontName='Helvetica-Bold', alignment=TA_LEFT)
+    sub_sty    = sty('Sub',     fontSize=10, textColor=WHITE,      fontName='Helvetica',      alignment=TA_LEFT)
+    h2_sty     = sty('H2',     fontSize=11, textColor=BLACK,       fontName='Helvetica-Bold', spaceAfter=4)
+    label_sty  = sty('Label',  fontSize=9,  textColor=GRAY,        fontName='Helvetica',      spaceAfter=2)
+    value_sty  = sty('Value',  fontSize=10, textColor=BLACK,       fontName='Helvetica-Bold', spaceAfter=6)
+    amt_sty    = sty('Amt',    fontSize=20, textColor=GREEN,       fontName='Helvetica-Bold', alignment=TA_RIGHT)
+    foot_sty   = sty('Foot',   fontSize=8,  textColor=GRAY,        fontName='Helvetica',      alignment=TA_CENTER)
+    status_sty = sty('Status', fontSize=11, textColor=GREEN,       fontName='Helvetica-Bold', alignment=TA_CENTER)
+
+    story = []
+
+    # ── HEADER BANNER ──
+    header_data = [[
+        Paragraph('⚡ PowerGrid', title_sty),
+        Paragraph(f'PAYMENT RECEIPT\n{payment.payment_id}', sty('R', fontSize=10, textColor=WHITE, fontName='Helvetica-Bold', alignment=TA_RIGHT)),
+    ]]
+    header_table = Table(header_data, colWidths=[110*mm, 60*mm])
+    header_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), GREEN),
+        ('TOPPADDING',    (0,0), (-1,-1), 14),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 14),
+        ('LEFTPADDING',   (0,0), (-1,-1), 12),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 12),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
+    story.append(header_table)
+    story.append(Spacer(1, 8*mm))
+
+    # ── STATUS BADGE ──
+    status_color = GREEN if payment.payment_status == 'completed' else colors.HexColor('#e53e3e')
+    status_label = payment.get_payment_status_display().upper()
+    badge = Table([[Paragraph(f'● {status_label}', status_sty)]], colWidths=[170*mm])
+    badge.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f0fdf4') if payment.payment_status == 'completed' else colors.HexColor('#fff5f5')),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('ROUNDEDCORNERS', [8]),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#d1fae5') if payment.payment_status == 'completed' else colors.HexColor('#fecaca')),
+    ]))
+    story.append(badge)
+    story.append(Spacer(1, 6*mm))
+
+    # ── AMOUNT ──
+    story.append(Paragraph(f'Rs {payment.paid_amount}', amt_sty))
+    story.append(Paragraph(f'For billing month: {payment.billing_month}', sty('bm', fontSize=9, textColor=GRAY, fontName='Helvetica', alignment=TA_RIGHT)))
+    story.append(Spacer(1, 6*mm))
+    story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#e8edf2')))
+    story.append(Spacer(1, 6*mm))
+
+    # ── PAYMENT DETAILS TABLE ──
+    story.append(Paragraph('Payment Details', h2_sty))
+    story.append(Spacer(1, 3*mm))
+
+    def row(label, value):
+        return [
+            Paragraph(label, sty('lbl', fontSize=9, textColor=GRAY, fontName='Helvetica')),
+            Paragraph(str(value), sty('val', fontSize=9, textColor=BLACK, fontName='Helvetica-Bold')),
+        ]
+
+    details = [
+        row('Payment ID',       payment.payment_id),
+        row('Consumer Number',  payment.consumer_number),
+        row('Billing Month',    payment.billing_month),
+        row('Bill Amount',      f'Rs {payment.bill_amount}'),
+        row('Late Fee',         f'Rs {payment.late_fee}'),
+        row('Discount',         f'Rs {payment.discount}'),
+        row('Amount Paid',      f'Rs {payment.paid_amount}'),
+        row('Payment Method',   payment.get_payment_method_display()),
+        row('Payment Status',   payment.get_payment_status_display()),
+        row('Transaction ID',   payment.transaction_id or '—'),
+        row('Payment Date',     payment.payment_date.strftime('%d %b %Y, %I:%M %p') if payment.payment_date else '—'),
+        row('Receipt Generated', payment.created_at.strftime('%d %b %Y, %I:%M %p')),
+    ]
+
+    detail_table = Table(details, colWidths=[70*mm, 100*mm])
+    detail_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), WHITE),
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [WHITE, LGRAY]),
+        ('TOPPADDING',    (0,0), (-1,-1), 7),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+        ('LEFTPADDING',   (0,0), (-1,-1), 10),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 10),
+        ('BOX',     (0,0), (-1,-1), 1, colors.HexColor('#e8edf2')),
+        ('LINEBELOW', (0,0), (-1,-2), 0.5, colors.HexColor('#e8edf2')),
+    ]))
+    story.append(detail_table)
+    story.append(Spacer(1, 6*mm))
+
+    # ── ACCOUNT HOLDER ──
+    story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#e8edf2')))
+    story.append(Spacer(1, 4*mm))
+    story.append(Paragraph('Account Holder', h2_sty))
+    acct = Table([
+        row('Name',     payment.user.get_full_name() or payment.user.username),
+        row('Email',    payment.user.email),
+        row('Username', payment.user.username),
+    ], colWidths=[70*mm, 100*mm])
+    acct.setStyle(TableStyle([
+        ('ROWBACKGROUNDS', (0,0), (-1,-1), [WHITE, LGRAY]),
+        ('TOPPADDING',    (0,0), (-1,-1), 7),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
+        ('LEFTPADDING',   (0,0), (-1,-1), 10),
+        ('RIGHTPADDING',  (0,0), (-1,-1), 10),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#e8edf2')),
+        ('LINEBELOW', (0,0), (-1,-2), 0.5, colors.HexColor('#e8edf2')),
+    ]))
+    story.append(acct)
+    story.append(Spacer(1, 10*mm))
+
+    # ── FOOTER ──
+    story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#e8edf2')))
+    story.append(Spacer(1, 4*mm))
+    story.append(Paragraph('This is a computer-generated receipt and does not require a signature.', foot_sty))
+    story.append(Paragraph('PowerGrid Electricity Services  |  support@powergrid.com  |  1800-XXX-XXXX', foot_sty))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="PowerGrid_Receipt_{payment.payment_id}.pdf"'
+    return response
+
+
+# ── FEATURE 3+4: Outage Announcements Page ────────────────────────────────
+from .models import OutageAnnouncement
+
+def outage_announcements_view(request):
+    """Public page listing all upcoming and recent outage announcements."""
+    announcements = OutageAnnouncement.objects.all().order_by('-start_datetime')[:20]
+    return render(request, 'services/outage_announcements.html', {
+        'announcements': announcements
+    })

@@ -219,6 +219,26 @@ class ConnectionRequest(models.Model):
         
         super().save(*args, **kwargs)
     
+
+    def get_timeline_steps(self):
+        order = ['pending', 'under_review', 'site_inspection', 'approved', 'completed']
+        labels = {'pending':'Pending','under_review':'Under Review','site_inspection':'Inspection',
+                  'approved':'Approved','completed':'Completed'}
+        if self.status == 'rejected':
+            return [{'label': s_label, 'done': True, 'active': False}
+                    for s, s_label in labels.items() if order.index(s) < order.index('approved')] +                    [{'label': 'Rejected', 'done': False, 'active': True}]
+        steps = []
+        reached = False
+        for s in order:
+            if s == self.status:
+                steps.append({'label': labels[s], 'done': False, 'active': True})
+                reached = True
+            elif not reached:
+                steps.append({'label': labels[s], 'done': True, 'active': False})
+            else:
+                steps.append({'label': labels[s], 'done': False, 'active': False})
+        return steps
+
     def __str__(self):
         return f"{self.request_number} - {self.full_name}"
     
@@ -393,12 +413,29 @@ class Complaint(models.Model):
             
             self.complaint_number = f'COMP{new_number:07d}'
         
-        # Set resolved date when status becomes resolved
-        if self.status == 'resolved' and not self.resolved_date:
-            self.resolved_date = timezone.now()
-        
         super().save(*args, **kwargs)
     
+
+    def get_timeline_steps(self):
+        order  = ['registered', 'acknowledged', 'in_progress', 'resolved', 'closed']
+        labels = {'registered':'Registered','acknowledged':'Acknowledged',
+                  'in_progress':'In Progress','resolved':'Resolved','closed':'Closed'}
+        if self.status == 'reopened':
+            return [{'label':'Registered','done':True,'active':False},
+                    {'label':'Resolved','done':True,'active':False},
+                    {'label':'Reopened','done':False,'active':True}]
+        steps = []
+        reached = False
+        for s in order:
+            if s == self.status:
+                steps.append({'label': labels[s], 'done': False, 'active': True})
+                reached = True
+            elif not reached:
+                steps.append({'label': labels[s], 'done': True, 'active': False})
+            else:
+                steps.append({'label': labels[s], 'done': False, 'active': False})
+        return steps
+
     def __str__(self):
         return f"{self.complaint_number} - {self.subject}"
 
@@ -479,6 +516,23 @@ class PowerOutage(models.Model):
         
         super().save(*args, **kwargs)
     
+
+    def get_timeline_steps(self):
+        order  = ['reported', 'acknowledged', 'investigating', 'repairing', 'resolved']
+        labels = {'reported':'Reported','acknowledged':'Acknowledged',
+                  'investigating':'Investigating','repairing':'Repairing','resolved':'Resolved'}
+        steps = []
+        reached = False
+        for s in order:
+            if s == self.status:
+                steps.append({'label': labels[s], 'done': False, 'active': True})
+                reached = True
+            elif not reached:
+                steps.append({'label': labels[s], 'done': True, 'active': False})
+            else:
+                steps.append({'label': labels[s], 'done': False, 'active': False})
+        return steps
+
     def __str__(self):
         return f"{self.report_number} - {self.area}"
 
@@ -668,3 +722,33 @@ class TicketReply(models.Model):
     def __str__(self):
         who = 'Staff' if self.is_staff_reply else 'User'
         return f'{who} reply on {self.ticket.ticket_number} at {self.created_at:%Y-%m-%d %H:%M}'
+
+
+# ── FEATURE 4: SCHEDULED OUTAGE ANNOUNCEMENT ──────────────────────────────
+class OutageAnnouncement(models.Model):
+    STATUS_CHOICES = [
+        ('scheduled', 'Scheduled'),
+        ('ongoing',   'Ongoing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    title           = models.CharField(max_length=300)
+    area            = models.CharField(max_length=300, help_text='Comma-separated areas affected')
+    reason          = models.TextField(help_text='Reason for the planned outage')
+    start_datetime  = models.DateTimeField()
+    end_datetime    = models.DateTimeField()
+    status          = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    notify_users    = models.BooleanField(default=True, help_text='Send email notification to all users')
+    notified_at     = models.DateTimeField(null=True, blank=True)
+    created_by      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_datetime']
+        verbose_name = 'Outage Announcement'
+        verbose_name_plural = 'Outage Announcements'
+
+    def __str__(self):
+        return f'{self.title} — {self.start_datetime.strftime("%d %b %Y")}'

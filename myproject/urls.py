@@ -27,6 +27,8 @@ from myapp.views import (
     meter_reading_submission_view, faq_view,
     support_ticket_view, my_applications_view,
     ticket_detail_view,
+    download_payment_receipt,
+    outage_announcements_view,
 )
 
 
@@ -51,6 +53,8 @@ urlpatterns = [
     # My Applications
     path('my-applications/', my_applications_view, name='my_applications'),
     path('services/support/ticket/<int:ticket_id>/', ticket_detail_view, name='ticket_detail'),
+    path('payments/<str:payment_id>/receipt/', download_payment_receipt, name='payment_receipt'),
+    path('outages/announcements/', outage_announcements_view, name='outage_announcements'),
 ]
 
 if settings.DEBUG:
