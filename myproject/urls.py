@@ -55,6 +55,9 @@ urlpatterns = [
     path('services/support/ticket/<int:ticket_id>/', ticket_detail_view, name='ticket_detail'),
     path('payments/<str:payment_id>/receipt/', download_payment_receipt, name='payment_receipt'),
     path('outages/announcements/', outage_announcements_view, name='outage_announcements'),
+    
+     # REST API
+    path('api/', include('api.urls', namespace='api')),
 ]
 
 if settings.DEBUG:

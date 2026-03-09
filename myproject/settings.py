@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     
     
     "myapp",
+    "api",
+    "rest_framework",
     "accounts",  # ← Must be here
     "pwa",
     "django_otp",
@@ -328,3 +330,31 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# ── Django REST Framework ─────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',  # Nice HTML interface
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',   # Smart meter can send 100/hour unauthenticated
+        'user': '1000/hour',  # Logged in users get more
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+# ── Smart Meter API Key ───────────────────────────────────────────────────
+SMART_METER_API_KEY = 'powergrid-smart-meter-secret-2026'

@@ -1,0 +1,338 @@
+{% load static %}
+{% load pwa %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% progressive_web_app_meta %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Docs — PowerGrid</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Nunito+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --green:#3a9e25; --green-dark:#256b17; --green-light:#e8f7e4; --green-xlight:#f4fbf2;
+            --black:#111a0e; --ink:#1f2d1b; --ink-mid:#3d5236; --ink-soft:#7a9470;
+            --border:#d4e8ce; --border-mid:#c0dab8; --white:#ffffff; --off-white:#fafcf9;
+            --red:#dc2626; --red-bg:#fee2e2; --blue:#2563eb; --blue-bg:#dbeafe;
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family:"Nunito Sans",sans-serif; background:var(--off-white); color:var(--ink); min-height:100vh; }
+        .pw { max-width:1160px; margin:0 auto; padding:0 32px; }
+        .top-nav { display:flex; align-items:center; justify-content:space-between; padding:20px 0; }
+        .logo { display:flex; align-items:center; gap:11px; font-family:"Bebas Neue",sans-serif; font-size:1.7rem; color:var(--black); letter-spacing:2px; text-decoration:none; }
+        .logo-bolt { width:36px; height:36px; border-radius:9px; background:var(--green); display:flex; align-items:center; justify-content:center; }
+        .logo-bolt i { color:#fff; font-size:0.95rem; }
+        .logo span { color:var(--green); }
+        .nav-links { display:flex; gap:4px; }
+        .nav-links a { text-decoration:none; color:var(--ink-mid); font-size:0.88rem; font-weight:700; padding:7px 15px; border-radius:8px; transition:all 0.2s; }
+        .nav-links a:hover,.nav-links a.active { background:var(--green-light); color:var(--green-dark); }
+        .nav-right { display:flex; align-items:center; gap:10px; position:relative; }
+        .notif-btn { position:relative; width:36px; height:36px; border-radius:9px; background:var(--off-white); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--ink-mid); text-decoration:none; transition:all 0.2s; }
+        .notif-btn:hover { background:var(--green-light); color:var(--green-dark); }
+        .notif-badge { position:absolute; top:-5px; right:-5px; background:var(--red); color:#fff; font-size:0.6rem; font-weight:800; min-width:16px; height:16px; border-radius:10px; display:flex; align-items:center; justify-content:center; padding:0 4px; border:2px solid var(--white); }
+        .profile-wrap { position:relative; }
+        .profile-trigger { display:flex; align-items:center; gap:8px; cursor:pointer; padding:5px 10px 5px 5px; border-radius:10px; border:1.5px solid var(--border); background:var(--off-white); transition:all 0.2s; user-select:none; }
+        .profile-trigger:hover { background:var(--green-light); }
+        .nav-avatar { width:30px; height:30px; border-radius:50%; background:var(--green); display:flex; align-items:center; justify-content:center; font-family:"Bebas Neue",sans-serif; font-size:1rem; color:#fff; }
+        .nav-username { font-weight:700; font-size:0.85rem; color:var(--ink); }
+        .profile-caret { color:var(--ink-soft); font-size:0.65rem; transition:transform 0.2s; }
+        .profile-wrap.open .profile-caret { transform:rotate(180deg); }
+        .profile-dropdown { position:absolute; top:calc(100% + 8px); right:0; background:var(--white); border:1.5px solid var(--border); border-radius:14px; min-width:220px; box-shadow:0 12px 36px rgba(0,0,0,0.12); z-index:9999; overflow:hidden; opacity:0; visibility:hidden; transform:translateY(-8px); transition:all 0.22s ease; }
+        .profile-wrap.open .profile-dropdown { opacity:1; visibility:visible; transform:translateY(0); }
+        .dd-header { padding:14px 16px 12px; border-bottom:1px solid var(--border); background:var(--green-xlight); }
+        .dd-header .dd-name { font-weight:800; font-size:0.9rem; color:var(--black); }
+        .dd-header .dd-email { font-size:0.75rem; color:var(--ink-soft); margin-top:2px; }
+        .dd-item { display:flex; align-items:center; gap:10px; padding:10px 16px; text-decoration:none; color:var(--ink); font-size:0.85rem; font-weight:600; transition:background 0.15s; }
+        .dd-item:hover { background:var(--green-xlight); color:var(--green-dark); }
+        .dd-item i { width:16px; text-align:center; color:var(--ink-soft); font-size:0.82rem; }
+        .dd-divider { height:1px; background:var(--border); margin:4px 0; }
+        .dd-item.danger { color:var(--red); }
+        .dd-item.danger:hover { background:var(--red-bg); }
+        .content { padding:40px 0 80px; }
+        .pg-title { display:flex; align-items:center; gap:16px; margin-bottom:8px; }
+        .pg-icon { width:48px; height:48px; border-radius:13px; background:var(--green); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .pg-icon i { color:#fff; font-size:1.1rem; }
+        .pg-title h1 { font-size:1.55rem; font-weight:800; color:var(--black); }
+        .pg-title p { font-size:0.86rem; color:var(--ink-soft); margin-top:2px; }
+        .badge { display:inline-flex; align-items:center; gap:6px; background:var(--green-light); color:var(--green-dark); font-size:0.74rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1px solid var(--border-mid); margin-top:10px; }
+        .dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:blink 2s ease-in-out infinite; }
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+        .url-bar { background:#0d1117; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+        .url-label { font-family:"Share Tech Mono",monospace; font-size:0.68rem; color:#555; text-transform:uppercase; letter-spacing:1px; }
+        .url-val { font-family:"Share Tech Mono",monospace; font-size:0.9rem; color:#4ade80; margin-top:3px; }
+        .copy-btn { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); color:#888; font-size:0.72rem; padding:5px 14px; border-radius:7px; cursor:pointer; font-family:"Nunito Sans",sans-serif; font-weight:600; transition:all 0.2s; }
+        .copy-btn:hover { background:rgba(74,222,128,0.12); color:#4ade80; }
+        .card { background:var(--white); border:1.5px solid var(--border); border-radius:16px; padding:24px; margin-bottom:14px; }
+        .sec { font-size:0.74rem; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:10px; margin:28px 0 12px; }
+        .sec::after { content:""; flex:1; height:1px; background:var(--border); }
+        .pill { display:inline-block; font-family:"Share Tech Mono",monospace; font-size:0.7rem; font-weight:700; padding:3px 10px; border-radius:6px; flex-shrink:0; }
+        .get { background:var(--blue-bg); color:var(--blue); }
+        .post { background:var(--green-light); color:var(--green-dark); }
+        .ep-row { display:flex; gap:14px; align-items:flex-start; }
+        .ep-url { font-family:"Share Tech Mono",monospace; font-size:0.88rem; color:var(--black); font-weight:600; }
+        .ep-desc { font-size:0.84rem; color:var(--ink-soft); margin-top:3px; line-height:1.55; }
+        .code { background:#0d1117; border-radius:11px; padding:16px 18px; overflow-x:auto; margin-top:14px; }
+        .code pre { font-family:"Share Tech Mono",monospace; font-size:0.78rem; line-height:1.75; color:#c9d1d9; white-space:pre; }
+        .ck{color:#79c0ff} .cs{color:#a5d6ff} .cn{color:#ffa657} .cb{color:#ff7b72} .cc{color:#8b949e} .cg{color:#7ee787}
+        .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+        @media(max-width:720px){.two-col{grid-template-columns:1fr}.nav-links{display:none}}
+        .col-lbl { font-size:0.7rem; font-weight:800; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+        .auth { display:inline-flex; align-items:center; gap:6px; font-size:0.76rem; color:var(--ink-soft); margin-top:12px; }
+        .try { display:inline-flex; align-items:center; gap:6px; background:var(--green-xlight); color:var(--green-dark); border:1.5px solid var(--border); font-size:0.78rem; font-weight:700; padding:6px 14px; border-radius:8px; text-decoration:none; margin-top:12px; transition:all 0.2s; }
+        .try:hover { background:var(--green-light); }
+        .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+        .chip { display:inline-flex; align-items:center; gap:5px; background:var(--off-white); border:1.5px solid var(--border); color:var(--ink-mid); font-size:0.77rem; font-weight:700; padding:5px 13px; border-radius:8px; text-decoration:none; font-family:"Share Tech Mono",monospace; transition:all 0.2s; }
+        .chip:hover { background:var(--green-light); color:var(--green-dark); }
+        .note { background:var(--green-xlight); border:1px solid var(--border); border-radius:10px; padding:11px 14px; font-size:0.8rem; color:var(--ink-mid); line-height:1.5; margin-top:12px; }
+        .flow-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; }
+        @media(max-width:720px){.flow-grid{grid-template-columns:1fr}}
+        .fb { border-radius:12px; padding:14px 16px; }
+        .fb b { font-size:0.74rem; display:block; margin-bottom:5px; }
+        .fb p { font-size:0.8rem; line-height:1.5; }
+        .fb1{background:var(--green-xlight);border:1px solid var(--border);} .fb1 b{color:var(--green-dark);}
+        .fb2{background:var(--blue-bg);border:1px solid #bfdbfe;} .fb2 b{color:var(--blue);}
+        .fb3{background:#faf5ff;border:1px solid #e9d5ff;} .fb3 b{color:#7c3aed;}
+        .s-tbl{width:100%;border-collapse:collapse;}
+        .s-tbl td{padding:10px 0;border-bottom:1px solid var(--green-xlight);font-size:0.86rem;}
+        .s-tbl td:first-child{font-family:"Share Tech Mono",monospace;font-weight:800;width:55px;}
+        .s2{color:var(--green-dark)} .s4{color:var(--red)} .s40{color:#d97706}
+    </style>
+</head>
+<body>
+
+<div style="background:var(--white);border-bottom:1.5px solid var(--border);">
+<div class="pw">
+<nav class="top-nav">
+    <a href="{% url 'user_dashboard' %}" style="text-decoration:none;">
+        <div class="logo"><div class="logo-bolt"><i class="fa-solid fa-bolt"></i></div>Power<span>Grid</span></div>
+    </a>
+    <div class="nav-links">
+        <a href="{% url 'user_dashboard' %}">Dashboard</a>
+        <a href="{% url 'bill_payment' %}">Billing</a>
+        <a href="{% url 'complaint_registration' %}">Complaints</a>
+        <a href="{% url 'connection_request' %}">Services</a>
+        <a href="{% url 'my_applications' %}">My Applications</a>
+        <a href="{% url 'faq' %}">FAQ</a>
+        <a href="{% url 'api:api_docs' %}" class="active">API Docs</a>
+    </div>
+    <div class="nav-right">
+        <a href="{% url 'accounts:notifications_view' %}" class="notif-btn">
+            <i class="fa-solid fa-bell"></i>
+            {% if unread_notifications_count %}<span class="notif-badge">{{ unread_notifications_count }}</span>{% endif %}
+        </a>
+        <div class="profile-wrap" id="profile-wrap">
+            <div class="profile-trigger" id="profile-trigger">
+                <div class="nav-avatar">{{ user.first_name|first|upper|default:"U" }}</div>
+                <span class="nav-username">{{ user.first_name|default:"User" }}</span>
+                <i class="fa-solid fa-chevron-down profile-caret"></i>
+            </div>
+            <div class="profile-dropdown">
+                <div class="dd-header">
+                    <div class="dd-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="dd-email">{{ user.email }}</div>
+                </div>
+                <a href="{% url 'accounts:user_profile' %}" class="dd-item"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="{% url 'accounts:change_password' %}" class="dd-item"><i class="fa-solid fa-lock"></i> Change Password</a>
+                <a href="{% url 'accounts:consumer_numbers' %}" class="dd-item"><i class="fa-solid fa-id-card"></i> Consumer Numbers</a>
+                <a href="{% url 'accounts:email_preferences' %}" class="dd-item"><i class="fa-solid fa-envelope-open-text"></i> Email Preferences</a>
+                <a href="{% url 'accounts:notifications_view' %}" class="dd-item">
+                    <i class="fa-solid fa-bell"></i> Notifications
+                    {% if unread_notifications_count %}
+                    <span style="margin-left:auto;background:var(--red);color:#fff;font-size:0.62rem;font-weight:800;padding:1px 7px;border-radius:10px;">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                <div class="dd-divider"></div>
+                <form action="{% url 'accounts:logout' %}" method="POST" style="padding:4px 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="dd-item danger" style="background:none;border:none;cursor:pointer;width:100%;">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+</div>
+</div>
+
+<div class="pw">
+<div class="content">
+
+    <div class="pg-title">
+        <div class="pg-icon"><i class="fa-solid fa-code"></i></div>
+        <div>
+            <h1>PowerGrid REST API</h1>
+            <p>Smart meter integration ready — same endpoints work for manual and automatic readings</p>
+        </div>
+        <div style="margin-left:auto;">
+            <div class="badge"><span class="dot"></span> API Online — v1.0</div>
+        </div>
+    </div>
+
+    <div class="url-bar">
+        <div><div class="url-label">Base URL</div><div class="url-val" id="base-url">{{ base_url }}</div></div>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('base-url').innerText);this.innerText='Copied!'">Copy</button>
+    </div>
+
+    <div class="sec">Quick Test</div>
+    <div class="card">
+        <p style="font-size:0.86rem;color:var(--ink-soft);margin-bottom:12px;">Click any button to test directly in your browser:</p>
+        <div class="chips">
+            <a href="/api/health/" target="_blank" class="chip"><i class="fa-solid fa-heart-pulse"></i> Health Check</a>
+            <a href="/api/summary/" target="_blank" class="chip"><i class="fa-solid fa-chart-pie"></i> My Summary</a>
+            <a href="/api/meter-readings/" target="_blank" class="chip"><i class="fa-solid fa-gauge"></i> My Readings</a>
+            <a href="/api/status/?type=payment&ref=PAY0000001" target="_blank" class="chip"><i class="fa-solid fa-magnifying-glass"></i> Status Check</a>
+        </div>
+    </div>
+
+    <div class="sec">Endpoints</div>
+
+    <div class="card">
+        <div class="ep-row">
+            <span class="pill get">GET</span>
+            <div><div class="ep-url">/api/health/</div><div class="ep-desc">Check if the API is online. No login needed.</div></div>
+        </div>
+        <a href="/api/health/" target="_blank" class="try"><i class="fa-solid fa-play"></i> Try it</a>
+        <div class="auth"><i class="fa-solid fa-globe"></i> Public — no login required</div>
+    </div>
+
+    <div class="card">
+        <div class="ep-row">
+            <span class="pill post">POST</span>
+            <div><div class="ep-url">/api/meter-reading/submit/</div><div class="ep-desc"><strong>Main smart meter endpoint.</strong> Any device sends readings here. Smart meter readings are auto-verified. Manual readings need admin approval.</div></div>
+        </div>
+        <div class="two-col">
+            <div>
+                <div class="col-lbl">Request Body</div>
+                <div class="code"><pre><span class="cc">// Required</span>
+{
+  <span class="ck">"consumer_number"</span>:  <span class="cs">"CON0000001"</span>,
+  <span class="ck">"current_reading"</span>:   <span class="cn">1456.7</span>,
+  <span class="ck">"previous_reading"</span>:  <span class="cn">1411.4</span>,
+  <span class="ck">"reading_date"</span>:      <span class="cs">"2026-03-09"</span>,
+  <span class="ck">"api_key"</span>:           <span class="cs">"{{ api_key }}"</span>,
+  <span class="ck">"source"</span>:            <span class="cs">"smart_meter"</span>,
+
+  <span class="cc">// Smart meter extras (optional)</span>
+  <span class="ck">"device_id"</span>:         <span class="cs">"SM-MH-00123"</span>,
+  <span class="ck">"voltage"</span>:           <span class="cn">231.4</span>,
+  <span class="ck">"current_amp"</span>:       <span class="cn">4.2</span>,
+  <span class="ck">"power_factor"</span>:      <span class="cn">0.92</span>,
+  <span class="ck">"signal_strength"</span>:   <span class="cn">87</span>,
+  <span class="ck">"tamper_alert"</span>:      <span class="cb">false</span>
+}</pre></div>
+            </div>
+            <div>
+                <div class="col-lbl">Response — 201 Created</div>
+                <div class="code"><pre>{
+  <span class="ck">"success"</span>:         <span class="cb">true</span>,
+  <span class="ck">"reading_id"</span>:      <span class="cs">"READ0000042"</span>,
+  <span class="ck">"consumer"</span>:        <span class="cs">"CON0000001"</span>,
+  <span class="ck">"units_consumed"</span>:  <span class="cs">"45.30"</span>,
+  <span class="ck">"source"</span>:          <span class="cs">"smart_meter"</span>,
+  <span class="ck">"auto_verified"</span>:   <span class="cb">true</span>,
+  <span class="ck">"tamper_alert"</span>:    <span class="cb">false</span>,
+  <span class="ck">"message"</span>:         <span class="cs">"Auto-verified."</span>
+}</pre></div>
+                <div class="note"><strong style="color:var(--green-dark);">Smart Meter</strong> → auto-verified, no admin needed<br><strong>Manual</strong> → pending admin verification</div>
+            </div>
+        </div>
+        <div class="auth" style="margin-top:14px;"><i class="fa-solid fa-key"></i> Auth: API Key in request body as <code style="background:var(--green-xlight);padding:1px 6px;border-radius:4px;font-size:0.76rem;">api_key</code></div>
+    </div>
+
+    <div class="card">
+        <div class="ep-row">
+            <span class="pill get">GET</span>
+            <div><div class="ep-url">/api/status/?type=&lt;type&gt;&amp;ref=&lt;reference&gt;</div><div class="ep-desc">Check the current status of any application by reference number.</div></div>
+        </div>
+        <div class="chips">
+            <a href="/api/status/?type=payment&ref=PAY0000001" target="_blank" class="chip">payment</a>
+            <a href="/api/status/?type=complaint&ref=COMP0000001" target="_blank" class="chip">complaint</a>
+            <a href="/api/status/?type=connection&ref=CONN0000001" target="_blank" class="chip">connection</a>
+            <a href="/api/status/?type=ticket&ref=TICK0000001" target="_blank" class="chip">ticket</a>
+            <a href="/api/status/?type=outage&ref=OUT0000001" target="_blank" class="chip">outage</a>
+            <a href="/api/status/?type=meter&ref=READ0000001" target="_blank" class="chip">meter</a>
+        </div>
+        <div class="auth"><i class="fa-solid fa-user"></i> Login required — returns only your own data</div>
+    </div>
+
+    <div class="card">
+        <div class="ep-row">
+            <span class="pill get">GET</span>
+            <div><div class="ep-url">/api/summary/</div><div class="ep-desc">Everything about the logged-in consumer in one call — payments, complaints, readings, tickets, open counts, units this month.</div></div>
+        </div>
+        <a href="/api/summary/" target="_blank" class="try"><i class="fa-solid fa-play"></i> Try it</a>
+        <div class="auth"><i class="fa-solid fa-user"></i> Login required</div>
+    </div>
+
+    <div class="card">
+        <div class="ep-row">
+            <span class="pill get">GET</span>
+            <div><div class="ep-url">/api/meter-readings/</div><div class="ep-desc">Full list of meter readings. Filter by consumer number or source.</div></div>
+        </div>
+        <div class="chips" style="margin-top:10px;">
+            <code style="background:var(--green-xlight);padding:5px 12px;border-radius:8px;font-size:0.78rem;font-family:'Share Tech Mono',monospace;">?consumer=CON0000001</code>
+            <code style="background:var(--green-xlight);padding:5px 12px;border-radius:8px;font-size:0.78rem;font-family:'Share Tech Mono',monospace;">?source=smart_meter</code>
+            <code style="background:var(--green-xlight);padding:5px 12px;border-radius:8px;font-size:0.78rem;font-family:'Share Tech Mono',monospace;">?source=manual</code>
+        </div>
+        <a href="/api/meter-readings/" target="_blank" class="try"><i class="fa-solid fa-play"></i> Try it</a>
+        <div class="auth"><i class="fa-solid fa-user"></i> Login required</div>
+    </div>
+
+    <div class="sec">Smart Meter Integration</div>
+    <div class="card">
+        <p style="font-size:0.88rem;color:var(--ink-soft);margin-bottom:14px;">When a real smart meter is installed — this is the only code it needs:</p>
+        <div class="code"><pre><span class="cc"># Runs inside the smart meter every 15 minutes automatically</span>
+
+reading = meter.get_current_reading()
+
+response = http.post(<span class="cs">"{{ base_url }}meter-reading/submit/"</span>, {
+    <span class="ck">"consumer_number"</span>:  meter.consumer_number,
+    <span class="ck">"current_reading"</span>:   reading.value,
+    <span class="ck">"previous_reading"</span>:  meter.last_reading,
+    <span class="ck">"reading_date"</span>:      today(),
+    <span class="ck">"device_id"</span>:         meter.device_id,
+    <span class="ck">"voltage"</span>:           meter.voltage,
+    <span class="ck">"current_amp"</span>:       meter.current,
+    <span class="ck">"power_factor"</span>:      meter.power_factor,
+    <span class="ck">"signal_strength"</span>:   meter.signal,
+    <span class="ck">"tamper_alert"</span>:      meter.tamper_detected,
+    <span class="ck">"source"</span>:            <span class="cs">"smart_meter"</span>,
+    <span class="ck">"api_key"</span>:           <span class="cs">"<span class="cg">{{ api_key }}</span>"</span>
+})
+
+<span class="cc"># Done. Data is in your system instantly.</span></pre></div>
+        <div class="flow-grid">
+            <div class="fb fb1"><b>Today — Manual</b><p>User submits reading &#8594; Admin verifies &#8594; Bill generated</p></div>
+            <div class="fb fb2"><b>Tomorrow — Smart Meter</b><p>Meter sends to API &#8594; Auto verified &#8594; Bill generated</p></div>
+            <div class="fb fb3"><b>Same database</b><p>Zero code changes needed. System is already ready.</p></div>
+        </div>
+    </div>
+
+    <div class="sec">Response Codes</div>
+    <div class="card">
+        <table class="s-tbl">
+            <tr><td class="s2">200</td><td>Success — data returned</td></tr>
+            <tr><td class="s2">201</td><td>Created — reading saved successfully</td></tr>
+            <tr><td class="s40">400</td><td>Bad Request — missing or invalid fields</td></tr>
+            <tr><td class="s4">401</td><td>Unauthorized — wrong API key or not logged in</td></tr>
+            <tr><td class="s4">404</td><td>Not Found — consumer number or reference does not exist</td></tr>
+        </table>
+    </div>
+
+</div>
+</div>
+
+<script>
+    const wrap = document.getElementById("profile-wrap");
+    const trigger = document.getElementById("profile-trigger");
+    if (trigger) {
+        trigger.addEventListener("click", () => wrap.classList.toggle("open"));
+        document.addEventListener("click", e => { if (!wrap.contains(e.target)) wrap.classList.remove("open"); });
+    }
+</script>
+</body>
+</html>
