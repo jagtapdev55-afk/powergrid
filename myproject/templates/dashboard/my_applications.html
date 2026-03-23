@@ -12,80 +12,133 @@
       --green-xlight:rgba(58,158,37,0.05);--bg:#f4f7fa;--white:#fff;
       --ink:#1a2332;--ink-mid:#4a5568;--ink-soft:#8898aa;
       --border:#e8edf2;--border-mid:#d0d9e4;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,0.07);}
-    *{margin:0;padding:0;box-sizing:border-box;}
+    
+      *{margin:0;padding:0;box-sizing:border-box;}
+
     body{font-family:'Nunito Sans',sans-serif;background:var(--bg);color:var(--ink);}
+
     .top-nav{position:sticky;top:0;z-index:500;background:var(--white);
       border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;
       display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
-    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;
+    
+      .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;
       color:#0d1117;text-decoration:none;display:flex;align-items:center;gap:10px;}
-    .logo-bolt{width:30px;height:30px;background:var(--green);border-radius:7px;
+    
+      .logo-bolt{width:30px;height:30px;background:var(--green);border-radius:7px;
       display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;}
-    .logo span{color:var(--green);}
-    .nav-back{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-mid);
+    
+      .logo span{color:var(--green);}
+    
+      .nav-back{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-mid);
       text-decoration:none;font-size:0.84rem;font-weight:700;padding:7px 16px;
       border-radius:9px;border:1.5px solid var(--border);transition:all 0.18s;}
-    .nav-back:hover{background:var(--green-light);color:var(--green-dark);}
-    .page{max-width:960px;margin:0 auto;padding:36px 24px 80px;}
-    .page-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:#0d1117;margin-bottom:4px;}
-    .page-sub{font-size:0.85rem;color:var(--ink-soft);margin-bottom:28px;}
-    .tabs{display:flex;gap:4px;background:var(--white);border:1.5px solid var(--border);
+    
+      .nav-back:hover{background:var(--green-light);color:var(--green-dark);}
+    
+      .page{max-width:960px;margin:0 auto;padding:36px 24px 80px;}
+    
+      .page-title{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;color:#0d1117;margin-bottom:4px;}
+    
+      .page-sub{font-size:0.85rem;color:var(--ink-soft);margin-bottom:28px;}
+    
+      .tabs{display:flex;gap:4px;background:var(--white);border:1.5px solid var(--border);
       border-radius:12px;padding:4px;margin-bottom:24px;overflow-x:auto;}
-    .tab-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:none;
+    
+      .tab-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:none;
       background:transparent;border-radius:9px;font-family:'Nunito Sans',sans-serif;
       font-size:0.82rem;font-weight:700;color:var(--ink-soft);cursor:pointer;transition:all 0.18s;white-space:nowrap;}
-    .tab-btn.active{background:var(--green);color:#fff;}
-    .tab-btn:hover:not(.active){background:var(--bg);}
-    .tab-count{background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:0.72rem;}
-    .tab-btn.active .tab-count{background:rgba(255,255,255,0.25);}
-    .tab-panel{display:none;}
-    .tab-panel.active{display:block;}
-    .app-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);
+    
+      .tab-btn.active{background:var(--green);color:#fff;}
+    
+      .tab-btn:hover:not(.active){background:var(--bg);}
+    
+      .tab-count{background:rgba(0,0,0,0.1);padding:1px 7px;border-radius:10px;font-size:0.72rem;}
+    
+      .tab-btn.active .tab-count{background:rgba(255,255,255,0.25);}
+    
+      .tab-panel{display:none;}
+    
+      .tab-panel.active{display:block;}
+    
+      .app-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);
       padding:20px 24px;margin-bottom:14px;box-shadow:var(--shadow);transition:transform 0.15s;}
-    .app-card:hover{transform:translateY(-1px);}
-    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-    .card-ref{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--ink-soft);margin-bottom:4px;}
-    .card-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:#0d1117;}
-    .card-meta{font-size:0.8rem;color:var(--ink-soft);margin-top:3px;}
-    .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+    
+      .app-card:hover{transform:translateY(-1px);}
+    
+      .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+    
+      .card-ref{font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:var(--ink-soft);margin-bottom:4px;}
+    
+      .card-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:#0d1117;}
+    
+      .card-meta{font-size:0.8rem;color:var(--ink-soft);margin-top:3px;}
+    
+      .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
       border-radius:20px;font-size:0.75rem;font-weight:800;white-space:nowrap;flex-shrink:0;}
-    .pill-pending,.pill-registered,.pill-submitted,.pill-open,.pill-reported{background:#eff6ff;color:#1d4ed8;}
-    .pill-under_review,.pill-acknowledged,.pill-processing{background:#fffbeb;color:#d97706;}
-    .pill-in_progress,.pill-investigating,.pill-repairing{background:#f0f9ff;color:#0369a1;}
-    .pill-site_inspection,.pill-awaiting_response,.pill-reopened{background:#faf5ff;color:#7c3aed;}
-    .pill-approved,.pill-completed,.pill-resolved,.pill-verified,.pill-billed{background:var(--green-light);color:var(--green-dark);}
-    .pill-rejected,.pill-failed,.pill-closed,.pill-cancelled{background:#fff5f5;color:#c53030;}
+    
+      .pill-pending,.pill-registered,.pill-submitted,.pill-open,.pill-reported{background:#eff6ff;color:#1d4ed8;}
+    
+      .pill-under_review,.pill-acknowledged,.pill-processing{background:#fffbeb;color:#d97706;}
+    
+      .pill-in_progress,.pill-investigating,.pill-repairing{background:#f0f9ff;color:#0369a1;}
+    
+      .pill-site_inspection,.pill-awaiting_response,.pill-reopened{background:#faf5ff;color:#7c3aed;}
+    
+      .pill-approved,.pill-completed,.pill-resolved,.pill-verified,.pill-billed{background:var(--green-light);color:var(--green-dark);}
+    
+      .pill-rejected,.pill-failed,.pill-closed,.pill-cancelled{background:#fff5f5;color:#c53030;}
     /* Timeline */
+    
     .timeline{display:flex;align-items:flex-start;gap:0;margin:14px 0 4px;overflow-x:auto;padding:4px 0 8px;}
+    
     .tl-step{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+    
     .tl-line{height:2px;width:40px;background:var(--border);margin-top:11px;flex-shrink:0;}
+    
     .tl-line.done{background:var(--green);}
+    
     .tl-dot{width:22px;height:22px;border-radius:50%;background:var(--border);border:2px solid var(--border-mid);
       display:flex;align-items:center;justify-content:center;z-index:2;}
-    .tl-dot.done{background:var(--green);border-color:var(--green);}
-    .tl-dot.active{background:var(--white);border-color:var(--green);border-width:2.5px;}
-    .tl-label{font-size:0.65rem;font-weight:700;color:var(--ink-soft);margin-top:5px;
+    
+      .tl-dot.done{background:var(--green);border-color:var(--green);}
+    
+      .tl-dot.active{background:var(--white);border-color:var(--green);border-width:2.5px;}
+    
+      .tl-label{font-size:0.65rem;font-weight:700;color:var(--ink-soft);margin-top:5px;
       text-align:center;white-space:nowrap;max-width:58px;line-height:1.3;}
-    .tl-dot.done + .tl-label{color:var(--green-dark);}
-    .tl-dot.active + .tl-label{color:var(--ink);font-weight:800;}
+    
+      .tl-dot.done + .tl-label{color:var(--green-dark);}
+    
+      .tl-dot.active + .tl-label{color:var(--ink);font-weight:800;}
     .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);animation:p 1.4s ease-in-out infinite;}
     @keyframes p{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.4);opacity:0.6;}}
+    
     .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;
       padding-top:12px;border-top:1.5px solid var(--border);flex-wrap:wrap;gap:8px;}
-    .card-date{font-size:0.78rem;color:var(--ink-soft);}
-    .btn-sm{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:8px;
+    
+      .card-date{font-size:0.78rem;color:var(--ink-soft);}
+    
+      .btn-sm{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:8px;
       font-size:0.78rem;font-weight:800;text-decoration:none;border:1.5px solid var(--border);
       color:var(--ink-mid);background:var(--white);transition:all 0.18s;}
-    .btn-sm:hover{background:var(--bg);}
-    .btn-sm.green{background:var(--green);color:#fff;border-color:var(--green);}
-    .btn-sm.green:hover{background:var(--green-dark);}
-    .remark-box{background:var(--green-xlight);border:1.5px solid rgba(58,158,37,0.2);border-radius:8px;
+    
+      .btn-sm:hover{background:var(--bg);}
+    
+      .btn-sm.green{background:var(--green);color:#fff;border-color:var(--green);}
+    
+      .btn-sm.green:hover{background:var(--green-dark);}
+    
+      .remark-box{background:var(--green-xlight);border:1.5px solid rgba(58,158,37,0.2);border-radius:8px;
       padding:8px 12px;margin-top:10px;font-size:0.82rem;color:var(--ink-mid);}
-    .reject-box{background:#fff5f5;border:1.5px solid #fecaca;border-radius:8px;
+    
+      .reject-box{background:#fff5f5;border:1.5px solid #fecaca;border-radius:8px;
       padding:8px 12px;margin-top:10px;font-size:0.82rem;color:#c53030;}
-    .empty-state{text-align:center;padding:48px 20px;color:var(--ink-soft);}
-    .empty-state i{font-size:2.2rem;color:var(--border);margin-bottom:12px;display:block;}
-    .empty-state a{color:var(--green);font-weight:700;text-decoration:none;}
+    
+      .empty-state{text-align:center;padding:48px 20px;color:var(--ink-soft);}
+    
+      .empty-state i{font-size:2.2rem;color:var(--border);margin-bottom:12px;display:block;}
+    
+      .empty-state a{color:var(--green);font-weight:700;text-decoration:none;}
   </style>
 </head>
 <body>
