@@ -22,4 +22,12 @@ urlpatterns = [
     
     # Email Preferences
     path('email-preferences/', views.email_preferences_view, name='email_preferences'),
+    
+    path('forgot-password/',         views.forgot_password_step1, name='forgot_password_step1'),
+    path('forgot-password/verify/',  views.forgot_password_step2, name='forgot_password_step2'),
+    path('forgot-password/reset/',   views.forgot_password_step3, name='forgot_password_step3'),
+    path('forgot-password/resend/',  views.forgot_resend_otp,     name='forgot_resend_otp'),
+
+# Also add this alias so the login template {% url 'accounts:password_reset' %} works:
+    path('forgot-password/',         views.forgot_password_step1, name='password_reset'),
 ]

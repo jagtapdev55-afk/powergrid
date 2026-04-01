@@ -16,7 +16,15 @@ from django.contrib.auth.decorators import login_required
 
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .models import CustomUser, ConsumerNumber, EmailPreference
+from .models import CustomUser, ConsumerNumber, EmailPreference\
+
+import string
+from django.shortcuts import render, redirect
+
+from django.contrib.auth import get_user_model
+from django.core.mail import EmailMessage
+
+
 
 
 def send_email_async(subject, message, recipient_list):
@@ -526,3 +534,256 @@ def email_preferences_view(request):
         'preferences': preferences,
     }
     return render(request, 'accounts/email_preferences.html', context)
+
+User = get_user_model()
+
+
+def generate_otp():
+    """Generate a 6-digit numeric OTP."""
+    return ''.join(random.choices(string.digits, k=6))
+
+
+# ══════════════════════════════════════════════════════════════════
+# STEP 1 — Enter Username
+# ══════════════════════════════════════════════════════════════════
+
+def forgot_password_step1(request):
+    """
+    User enters their username.
+    System finds the email attached to that username and sends OTP.
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+
+        if not username:
+            messages.error(request, 'Please enter your username.')
+            return render(request, 'accounts/forgot_step1.html')
+
+        # Find user by username
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            # Don't reveal if username exists — security
+            messages.error(request, 'No account found with that username.')
+            return render(request, 'accounts/forgot_step1.html')
+
+        if not user.email:
+            messages.error(request, 'No email address is linked to this account. Please contact support.')
+            return render(request, 'accounts/forgot_step1.html')
+
+        # Generate OTP
+        otp_code = generate_otp()
+        expires_at = timezone.now() + timedelta(minutes=10)
+
+        # Save OTP using your existing EmailOTP model
+        from accounts.models import EmailOTP
+        # Delete any old unused OTPs for this email
+        EmailOTP.objects.filter(email=user.email, is_verified=False).delete()
+
+        EmailOTP.objects.create(
+            email      = user.email,
+            otp_code   = otp_code,
+            is_verified= False,
+            expires_at = expires_at,
+        )
+
+        # Send OTP email
+        masked_email = mask_email(user.email)
+        try:
+            send_otp_email(user.email, otp_code, user.username)
+            # Store username in session to use in next steps
+            request.session['reset_username'] = username
+            request.session['reset_email']    = user.email
+            messages.success(request, f'OTP sent to {masked_email}')
+            return redirect('accounts:forgot_password_step2')
+        except Exception as e:
+            messages.error(request, 'Failed to send OTP. Please try again.')
+            return render(request, 'accounts/forgot_step1.html')
+
+    return render(request, 'accounts/forgot_step1.html')
+
+
+# ══════════════════════════════════════════════════════════════════
+# STEP 2 — Enter OTP
+# ══════════════════════════════════════════════════════════════════
+
+def forgot_password_step2(request):
+    """
+    User enters the 6-digit OTP received on email.
+    """
+    # Must have gone through step 1
+    if 'reset_username' not in request.session:
+        return redirect('accounts:forgot_password_step1')
+
+    email    = request.session.get('reset_email', '')
+    masked   = mask_email(email)
+
+    if request.method == 'POST':
+        otp_entered = request.POST.get('otp', '').strip()
+
+        if not otp_entered:
+            messages.error(request, 'Please enter the OTP.')
+            return render(request, 'accounts/forgot_step2.html', {'masked_email': masked})
+
+        from accounts.models import EmailOTP
+
+        try:
+            otp_obj = EmailOTP.objects.filter(
+                email      = email,
+                otp_code   = otp_entered,
+                is_verified= False,
+            ).latest('created_at')
+        except EmailOTP.DoesNotExist:
+            messages.error(request, 'Invalid OTP. Please check and try again.')
+            return render(request, 'accounts/forgot_step2.html', {'masked_email': masked})
+
+        # Check expiry
+        if timezone.now() > otp_obj.expires_at:
+            messages.error(request, 'OTP has expired. Please request a new one.')
+            otp_obj.delete()
+            return render(request, 'accounts/forgot_step2.html', {'masked_email': masked})
+
+        # OTP is valid — mark as verified
+        otp_obj.is_verified = True
+        otp_obj.save()
+
+        # Mark session as OTP verified — allow access to step 3
+        request.session['reset_otp_verified'] = True
+
+        messages.success(request, 'OTP verified! Now set your new password.')
+        return redirect('accounts:forgot_password_step3')
+
+    return render(request, 'accounts/forgot_step2.html', {'masked_email': masked})
+
+
+# ══════════════════════════════════════════════════════════════════
+# STEP 3 — Set New Password
+# ══════════════════════════════════════════════════════════════════
+
+def forgot_password_step3(request):
+    """
+    User sets their new password.
+    Only accessible if OTP was verified in step 2.
+    """
+    # Must have completed step 2
+    if not request.session.get('reset_otp_verified'):
+        return redirect('accounts:forgot_password_step1')
+
+    if request.method == 'POST':
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+
+        if not password1 or not password2:
+            messages.error(request, 'Please fill in both fields.')
+            return render(request, 'accounts/forgot_step3.html')
+
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'accounts/forgot_step3.html')
+
+        if len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+            return render(request, 'accounts/forgot_step3.html')
+
+        # Get user from session
+        username = request.session.get('reset_username')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            messages.error(request, 'Session expired. Please start again.')
+            return redirect('accounts:forgot_password_step1')
+
+        # Set new password
+        user.set_password(password1)
+        user.save()
+
+        # Clean up session
+        for key in ['reset_username', 'reset_email', 'reset_otp_verified']:
+            request.session.pop(key, None)
+
+        # Clean up OTP records
+        from accounts.models import EmailOTP
+        EmailOTP.objects.filter(email=user.email).delete()
+
+        messages.success(request, 'Password changed successfully! Please login with your new password.')
+        return redirect('accounts:login')
+
+    return render(request, 'accounts/forgot_step3.html')
+
+
+# ══════════════════════════════════════════════════════════════════
+# RESEND OTP
+# ══════════════════════════════════════════════════════════════════
+
+def forgot_resend_otp(request):
+    """Resend OTP — called from step 2 page."""
+    if 'reset_username' not in request.session:
+        return redirect('accounts:forgot_password_step1')
+
+    email    = request.session.get('reset_email', '')
+    username = request.session.get('reset_username', '')
+
+    otp_code  = generate_otp()
+    expires_at = timezone.now() + timedelta(minutes=10)
+
+    from accounts.models import EmailOTP
+    EmailOTP.objects.filter(email=email, is_verified=False).delete()
+    EmailOTP.objects.create(
+        email      = email,
+        otp_code   = otp_code,
+        is_verified= False,
+        expires_at = expires_at,
+    )
+
+    try:
+        send_otp_email(email, otp_code, username)
+        messages.success(request, f'New OTP sent to {mask_email(email)}')
+    except Exception:
+        messages.error(request, 'Failed to resend OTP.')
+
+    return redirect('accounts:forgot_password_step2')
+
+
+# ══════════════════════════════════════════════════════════════════
+# HELPERS
+# ══════════════════════════════════════════════════════════════════
+
+def mask_email(email):
+    """
+    Masks email for display: john@gmail.com → j***@gmail.com
+    """
+    if not email or '@' not in email:
+        return email
+    local, domain = email.split('@', 1)
+    if len(local) <= 2:
+        masked_local = local[0] + '***'
+    else:
+        masked_local = local[0] + '***' + local[-1]
+    return f'{masked_local}@{domain}'
+
+
+def send_otp_email(email, otp_code, username):
+    """Send OTP email for password reset."""
+    subject = 'PowerGrid — Password Reset OTP'
+    body = f"""
+Hello {username},
+
+You requested a password reset for your PowerGrid account.
+
+Your OTP is:
+
+    {otp_code}
+
+This OTP is valid for 10 minutes.
+
+If you did not request this, please ignore this email.
+Your password will remain unchanged.
+
+— PowerGrid Security Team
+"""
+    msg = EmailMessage(
+        subject   = subject,
+        body      = body,
+        to        = [email],
+    )
+    msg.send()

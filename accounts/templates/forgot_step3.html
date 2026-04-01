@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Set New Password | PowerGrid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; display: flex; min-height: 100vh; background: #ffffff; }
+        .hero-section { flex: 1.2; position: relative; background-image: url('{% static "images/login-bg.jpg" %}'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: space-between; padding: 4rem; color: white; }
+        .hero-section::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(2,132,199,0.8) 100%); }
+        .hero-logo { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px; position: relative; z-index: 10; }
+        .hero-text { position: relative; z-index: 10; }
+        .hero-text h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; font-weight: 700; }
+        .hero-text p { font-size: 1.2rem; color: #e0f2fe; max-width: 450px; line-height: 1.6; }
+        .form-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4rem; }
+        .auth-container { width: 100%; max-width: 420px; }
+
+        .steps { display: flex; align-items: center; gap: 8px; margin-bottom: 2rem; }
+        .step { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+        .step.done { background: #16a34a; color: #fff; }
+        .step.active { background: #0f172a; color: #fff; }
+        .step-line { flex: 1; height: 2px; background: #0f172a; }
+
+        .auth-container h2 { font-size: 1.8rem; color: #0f172a; margin-bottom: 0.4rem; }
+        .auth-container .sub { color: #64748b; margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5; }
+
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 1.2rem; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+        .alert-error { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+        .alert-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; }
+
+        label { display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem; }
+
+        .input-wrap { position: relative; margin-bottom: 1.5rem; }
+        .input-wrap i.icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.9rem; }
+        .input-wrap .toggle-eye { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: color 0.2s; border: none; background: none; padding: 0; }
+        .input-wrap .toggle-eye:hover { color: #0284c7; }
+
+        input[type="password"], input[type="text"] {
+            width: 100%; padding: 1rem 3rem 1rem 2.8rem;
+            border: 1px solid #cbd5e1; border-radius: 8px;
+            font-family: inherit; font-size: 1rem;
+            background: #f8fafc; transition: all 0.2s; color: #0f172a;
+        }
+        input:focus { outline: none; border-color: #0284c7; background: #fff; box-shadow: 0 0 0 4px rgba(2,132,199,0.1); }
+
+        /* Password strength */
+        .strength-bar { height: 4px; border-radius: 2px; background: #e2e8f0; margin-top: 8px; margin-bottom: 4px; overflow: hidden; }
+        .strength-fill { height: 100%; width: 0; border-radius: 2px; transition: all 0.3s; }
+        .strength-label { font-size: 0.78rem; font-weight: 600; }
+        .s0 { width: 0; background: #e2e8f0; }
+        .s1 { width: 25%; background: #ef4444; }
+        .s2 { width: 50%; background: #f97316; }
+        .s3 { width: 75%; background: #eab308; }
+        .s4 { width: 100%; background: #16a34a; }
+
+        /* Requirements checklist */
+        .requirements { list-style: none; margin-bottom: 1.5rem; }
+        .requirements li { font-size: 0.82rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; transition: color 0.2s; }
+        .requirements li.met { color: #16a34a; }
+        .requirements li i { font-size: 0.72rem; width: 14px; }
+
+        .btn-submit { width: 100%; padding: 1rem; background: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-submit:hover { background: #1e293b; box-shadow: 0 10px 20px rgba(15,23,42,0.15); }
+
+        @media(max-width: 968px) { body { flex-direction: column; } .hero-section { display: none; } .form-section { padding: 2rem; } }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="hero-logo"><i class="fa-solid fa-bolt" style="color:#38bdf8;"></i> PowerGrid</div>
+        <div class="hero-text">
+            <h1>Account<br>Recovery</h1>
+            <p>Reset your password securely using your registered email address.</p>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="auth-container">
+
+            <div class="steps">
+                <div class="step done"><i class="fa-solid fa-check" style="font-size:0.7rem;"></i></div>
+                <div class="step-line"></div>
+                <div class="step done"><i class="fa-solid fa-check" style="font-size:0.7rem;"></i></div>
+                <div class="step-line"></div>
+                <div class="step active">3</div>
+            </div>
+
+            <h2>Set New Password</h2>
+            <p class="sub">Choose a strong password for your account. You'll use this to login from now on.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fa-solid fa-{% if message.tags == 'error' %}circle-xmark{% else %}circle-check{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST" id="reset-form">
+                {% csrf_token %}
+
+                <label for="password1">New Password</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-lock icon"></i>
+                    <input type="password" id="password1" name="password1" placeholder="Enter new password" autocomplete="new-password">
+                    <button type="button" class="toggle-eye" onclick="togglePwd('password1', this)">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+
+                <!-- Strength indicator -->
+                <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                <div class="strength-label" id="strength-label" style="color:#94a3b8; margin-bottom:12px;">Password strength</div>
+
+                <!-- Requirements -->
+                <ul class="requirements">
+                    <li id="req-len"><i class="fa-solid fa-circle"></i> At least 8 characters</li>
+                    <li id="req-upper"><i class="fa-solid fa-circle"></i> One uppercase letter</li>
+                    <li id="req-num"><i class="fa-solid fa-circle"></i> One number</li>
+                    <li id="req-special"><i class="fa-solid fa-circle"></i> One special character (!@#$...)</li>
+                </ul>
+
+                <label for="password2">Confirm Password</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-lock icon"></i>
+                    <input type="password" id="password2" name="password2" placeholder="Confirm new password" autocomplete="new-password">
+                    <button type="button" class="toggle-eye" onclick="togglePwd('password2', this)">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                </div>
+                <div id="match-msg" style="font-size:0.82rem;margin-top:-12px;margin-bottom:16px;"></div>
+
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    <i class="fa-solid fa-key"></i> Change Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+<script>
+// Toggle password visibility
+function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fa-regular fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fa-regular fa-eye';
+    }
+}
+
+// Strength meter
+const p1 = document.getElementById('password1');
+const p2 = document.getElementById('password2');
+const fill = document.getElementById('strength-fill');
+const label = document.getElementById('strength-label');
+const matchMsg = document.getElementById('match-msg');
+
+const reqs = {
+    len:     { el: document.getElementById('req-len'),     check: v => v.length >= 8 },
+    upper:   { el: document.getElementById('req-upper'),   check: v => /[A-Z]/.test(v) },
+    num:     { el: document.getElementById('req-num'),     check: v => /[0-9]/.test(v) },
+    special: { el: document.getElementById('req-special'), check: v => /[!@#$%^&*(),.?":{}|<>]/.test(v) },
+};
+
+p1.addEventListener('input', () => {
+    const val = p1.value;
+    let score = 0;
+
+    Object.values(reqs).forEach(r => {
+        const met = r.check(val);
+        r.el.classList.toggle('met', met);
+        r.el.querySelector('i').className = met ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle';
+        if (met) score++;
+    });
+
+    const classes = ['s0','s1','s2','s3','s4'];
+    const labels  = ['','Weak','Fair','Good','Strong'];
+    const colors  = ['#94a3b8','#ef4444','#f97316','#eab308','#16a34a'];
+
+    fill.className = 'strength-fill ' + classes[score];
+    label.textContent = labels[score] || 'Password strength';
+    label.style.color = colors[score];
+
+    checkMatch();
+});
+
+p2.addEventListener('input', checkMatch);
+
+function checkMatch() {
+    if (!p2.value) { matchMsg.textContent = ''; return; }
+    if (p1.value === p2.value) {
+        matchMsg.textContent = '✓ Passwords match';
+        matchMsg.style.color = '#16a34a';
+    } else {
+        matchMsg.textContent = '✗ Passwords do not match';
+        matchMsg.style.color = '#dc2626';
+    }
+}
+</script>
+</body>
+</html>
