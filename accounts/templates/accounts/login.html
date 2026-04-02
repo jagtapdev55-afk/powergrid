@@ -7,152 +7,46 @@
     <title>Admin Portal | Enterprise Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            display: flex;
-            min-height: 100vh;
-            background-color: #ffffff;
-        }
-
-        /* Left Side: The Authority Image */
-        .hero-section {
-            flex: 1.2; /* Takes up slightly more than half the screen */
-            position: relative;
-            background-image: url('{% static "images/login-bg.jpg" %}'); /* Wind turbines / grid */
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 4rem;
-            color: white;
-        }
-
-        /* Deep blue corporate gradient overlay */
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 132, 199, 0.8) 100%);
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; display: flex; min-height: 100vh; background-color: #ffffff; }
+        .hero-section { flex: 1.2; position: relative; background-image: url('{% static "images/login-bg.jpg" %}'); background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: space-between; padding: 4rem; color: white; }
+        .hero-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(2,132,199,0.8) 100%); }
         .hero-content { position: relative; z-index: 10; }
-        
-        .hero-logo { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px; margin-bottom: auto; position: relative; z-index: 10;}
-
+        .hero-logo { font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px; margin-bottom: auto; position: relative; z-index: 10; }
         .hero-text h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; font-weight: 700; }
         .hero-text p { font-size: 1.2rem; color: #e0f2fe; max-width: 450px; line-height: 1.6; }
-
-        /* Captcha Specific Styling */
-.captcha-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-}
-
-/* The hash key hidden input — force it invisible no matter what */
-.captcha-container input[type="hidden"],
-.captcha-container input[name$="_0"] {
-    display: none !important;
-    visibility: hidden !important;
-    width: 0 !important; height: 0 !important;
-    position: absolute !important;
-}
-
-.captcha-container img.captcha {
-    border-radius: 8px;
-    border: 1px solid #cbd5e1;
-    height: 48px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    flex-shrink: 0;
-}
-
-.captcha-container img.captcha:hover { opacity: 0.8; }
-
-/* The visible answer input */
-.captcha-container input[name$="_1"],
-.captcha-container input[type="text"] {
-    flex: 1;
-    margin-bottom: 0 !important;
-    padding: 0.75rem 1rem !important;
-}
-
-        /* Right Side: The Secure Form */
-        .form-section {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4rem;
-            background: #ffffff;
-        }
-
+        .captcha-container { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+        .captcha-container input[type="hidden"], .captcha-container input[name$="_0"] { display: none !important; visibility: hidden !important; width: 0 !important; height: 0 !important; position: absolute !important; }
+        .captcha-container img.captcha { border-radius: 8px; border: 1px solid #cbd5e1; height: 48px; cursor: pointer; transition: opacity 0.2s; flex-shrink: 0; }
+        .captcha-container img.captcha:hover { opacity: 0.8; }
+        .captcha-container input[name$="_1"], .captcha-container input[type="text"] { flex: 1; margin-bottom: 0 !important; padding: 0.75rem 1rem !important; }
+        .form-section { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4rem; background: #ffffff; }
         .auth-container { width: 100%; max-width: 420px; }
-
         .auth-container h2 { font-size: 2rem; color: #0f172a; margin-bottom: 0.5rem; }
         .auth-container p { color: #64748b; margin-bottom: 2.5rem; }
-
         .auth-container form { display: flex; flex-direction: column; }
-
         .auth-container label { font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem; }
-        
-        .auth-container input {
-            padding: 1rem 1.2rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 1rem;
-            transition: all 0.2s;
-            background: #f8fafc;
-        }
-
-        .auth-container input:focus {
-            outline: none;
-            border-color: #0284c7;
-            background: #ffffff;
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
-        }
-
+        .auth-container input { padding: 1rem 1.2rem; margin-bottom: 1.5rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem; transition: all 0.2s; background: #f8fafc; }
+        .auth-container input:focus { outline: none; border-color: #0284c7; background: #ffffff; box-shadow: 0 0 0 4px rgba(2,132,199,0.1); }
         .helptext { display: none; }
 
-        .btn-submit {
-            padding: 1rem;
-            background: #0f172a; /* Deep corporate slate */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 1rem;
-        }
+        /* ── Forgot Password ── */
+        .password-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+        .password-label-row label { margin-bottom: 0; }
+        .forgot-link { font-size: 0.82rem; color: #0284c7; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+        .forgot-link:hover { color: #0369a1; text-decoration: underline; }
 
-        .btn-submit:hover { background: #1e293b; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15); }
-
+        .btn-submit { padding: 1rem; background: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 1rem; }
+        .btn-submit:hover { background: #1e293b; box-shadow: 0 10px 20px rgba(15,23,42,0.15); }
         .auth-links { margin-top: 2rem; text-align: center; color: #64748b; font-size: 0.9rem; }
         .auth-links a { color: #0284c7; font-weight: 600; text-decoration: none; }
-        
-        @media (max-width: 968px) {
-            body { flex-direction: column; }
-            .hero-section { display: none; } /* Hide image on mobile for speed */
-            .form-section { padding: 2rem; }
-        }
+        @media (max-width: 968px) { body { flex-direction: column; } .hero-section { display: none; } .form-section { padding: 2rem; } }
     </style>
 </head>
 <body>
-
     <div class="hero-section">
-        <div class="hero-logo">
-            <i class="fa-solid fa-bolt" style="color: #38bdf8;"></i> PowerGrid
-        </div>
+        <div class="hero-logo"><i class="fa-solid fa-bolt" style="color:#38bdf8;"></i> PowerGrid</div>
         <div class="hero-text">
             <h1>Secure<br>Infrastructure<br>Portal</h1>
             <p>Centralized administration and monitoring for state-wide distribution networks.</p>
@@ -164,39 +58,38 @@
             <h2>Sign In</h2>
             <p>Enter your authorized operator credentials.</p>
 
-            
-
             <form method="POST" action="{% url 'accounts:login' %}">
                 {% csrf_token %}
-                
                 {% if form.non_field_errors %}
-                    <div style="color: #dc2626; background: #fee2e2; padding: 0.8rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
-                        {{ form.non_field_errors }}
-                    </div>
+                    <div style="color:#dc2626;background:#fee2e2;padding:0.8rem;border-radius:6px;margin-bottom:1rem;font-size:0.9rem;">{{ form.non_field_errors }}</div>
                 {% endif %}
 
                 <div>
                     <label for="{{ form.username.id_for_label }}">Operator ID / Username</label>
                     {{ form.username }}
-                    <span style="color: #dc2626; font-size: 0.8rem;">{{ form.username.errors }}</span>
+                    <span style="color:#dc2626;font-size:0.8rem;">{{ form.username.errors }}</span>
                 </div>
 
                 <div>
-                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    <!-- Forgot password link next to Password label -->
+                    <div class="password-label-row">
+                        <label for="{{ form.password.id_for_label }}">Password</label>
+                        <a href="{% url 'accounts:password_reset' %}" class="forgot-link">
+                            <i class="fa-solid fa-key" style="font-size:0.75rem;"></i> Forgot Password?
+                        </a>
+                    </div>
                     {{ form.password }}
-                    <span style="color: #dc2626; font-size: 0.8rem;">{{ form.password.errors }}</span>
+                    <span style="color:#dc2626;font-size:0.8rem;">{{ form.password.errors }}</span>
                 </div>
 
-                <div style="margin-bottom: 1.5rem;">
-    <label>Security Verification</label>
-    <div class="captcha-container">
-        {{ form.captcha }}
-    </div>
-    <span style="color: #dc2626; font-size: 0.8rem;">{{ form.captcha.errors }}</span>
-    <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.4rem;">
-        <i class="fa-solid fa-circle-info"></i> Click the image to load a new code.
-    </small>
-</div>
+                <div style="margin-bottom:1.5rem;">
+                    <label>Security Verification</label>
+                    <div class="captcha-container">{{ form.captcha }}</div>
+                    <span style="color:#dc2626;font-size:0.8rem;">{{ form.captcha.errors }}</span>
+                    <small style="color:#64748b;font-size:0.8rem;display:block;margin-top:0.4rem;">
+                        <i class="fa-solid fa-circle-info"></i> Click the image to load a new code.
+                    </small>
+                </div>
 
                 <button type="submit" class="btn-submit">Authenticate Session</button>
             </form>
@@ -208,71 +101,38 @@
     </div>
 
 <script>
-// django-simple-captcha renders:
-//   captcha_0  = HIDDEN input  → stores the hash key
-//   captcha_1  = VISIBLE input → user types the answer here
 function refreshCaptcha() {
-    var img        = document.querySelector('img.captcha');
-    // hidden key field
-    var hashField  = document.querySelector('input[name$="_0"]');
-    // visible answer field — clear it so user types fresh answer
-    var textField  = document.querySelector('input[name$="_1"]');
+    var img = document.querySelector('img.captcha');
+    var hashField = document.querySelector('input[name$="_0"]');
+    var textField = document.querySelector('input[name$="_1"]');
     if (!img) return;
-
-    fetch('/captcha/refresh/', {
-        method: 'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
+    fetch('/captcha/refresh/', { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        // Update the image src
         img.src = data.image_url;
-        // Put the new key into the HIDDEN field only
         if (hashField) hashField.value = data.key;
-        // Clear the visible answer box so user types the new code
         if (textField) { textField.value = ''; textField.focus(); }
     })
     .catch(function() {
-        // Fallback: cache-bust the image URL (key stays same)
         img.src = img.src.split('?')[0] + '?r=' + Math.random();
         if (textField) { textField.value = ''; textField.focus(); }
     });
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     var img = document.querySelector('img.captcha');
     if (img) {
         img.style.cursor = 'pointer';
         img.title = 'Click to refresh captcha';
         img.addEventListener('click', refreshCaptcha);
-    }
-
-    // Also add a visible refresh button next to the captcha
-    if (img) {
         var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.title = 'Get new code';
+        btn.type = 'button'; btn.title = 'Get new code';
         btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
-        btn.style.cssText = [
-            'background:none', 'border:1px solid #cbd5e1', 'border-radius:6px',
-            'padding:8px 10px', 'cursor:pointer', 'color:#64748b',
-            'font-size:1rem', 'transition:all 0.2s', 'flex-shrink:0'
-        ].join(';');
-        btn.addEventListener('mouseenter', function() {
-            this.style.background = '#f1f5f9';
-            this.style.color = '#0284c7';
-            this.style.borderColor = '#0284c7';
-        });
-        btn.addEventListener('mouseleave', function() {
-            this.style.background = 'none';
-            this.style.color = '#64748b';
-            this.style.borderColor = '#cbd5e1';
-        });
+        btn.style.cssText = 'background:none;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px;cursor:pointer;color:#64748b;font-size:1rem;transition:all 0.2s;flex-shrink:0';
+        btn.addEventListener('mouseenter', function() { this.style.background='#f1f5f9'; this.style.color='#0284c7'; this.style.borderColor='#0284c7'; });
+        btn.addEventListener('mouseleave', function() { this.style.background='none'; this.style.color='#64748b'; this.style.borderColor='#cbd5e1'; });
         btn.addEventListener('click', function() {
-            // Spin icon while loading
             var icon = this.querySelector('i');
-            icon.style.transition = 'transform 0.4s';
-            icon.style.transform = 'rotate(360deg)';
+            icon.style.transition = 'transform 0.4s'; icon.style.transform = 'rotate(360deg)';
             setTimeout(function() { icon.style.transform = ''; }, 400);
             refreshCaptcha();
         });
@@ -280,6 +140,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
 </body>
 </html>
