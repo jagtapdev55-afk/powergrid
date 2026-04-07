@@ -1,4 +1,4 @@
-# ⚡ PowerGrid — Electricity Distribution Management System
+# ⚡ PowerGrid Live — Smart Meter & Real-Time Energy Monitoring Portal
 
 <div align="center">
 
