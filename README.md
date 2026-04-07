@@ -366,17 +366,17 @@ This project integrates knowledge from **7 different fields:**
 
 ## 👨‍💻 Author
 
-**Your Name**  
-B.Tech / BCA / MCA — [Your College Name]  
-[your.email@example.com]  
-[LinkedIn Profile URL]  
-[GitHub Profile URL]
+**Dev Jgatp**  
+B.E (computer engineer) 
+[jagtapdev55@gmail.com]  
+[LinkedIn: [Profile URL](https://www.linkedin.com/in/dev-jagtap-67b056291/)]  
+[GitHub Profile [URL](https://github.com/jagtapdev55-afk)]
 
 ---
 
 ## 📄 License
 
-This project is built for educational purposes as part of a college/university project.
+This project is built for GUVNL(GUJARAT URJA VIKAS NIGAM LIMITED) as my intern project for the company.
 
 ---
 
